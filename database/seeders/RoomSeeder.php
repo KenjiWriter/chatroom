@@ -14,6 +14,13 @@ class RoomSeeder extends Seeder
     {
         $rooms = [
             [
+                'name' => 'Guest Welcome Center',
+                'slug' => 'guest-room',
+                'description' => 'Welcome! Please verify your email to unlock other rooms.',
+                'min_level' => 0,
+                'is_active' => true,
+            ],
+            [
                 'name' => 'General Lobby',
                 'slug' => 'general',
                 'description' => 'A place for everyone to chat and hang out.',
