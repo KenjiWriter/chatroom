@@ -9,7 +9,7 @@ use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request, LevelService $levelService)
+    public function index(Request $request, LevelService $levelService, \App\Services\FriendshipService $friendshipService)
     {
         $user = $request->user();
         
@@ -39,9 +39,42 @@ class DashboardController extends Controller
             ->orderBy('name')
             ->get();
 
+        // Social Data
+        $friends = $friendshipService->getFriends($user)->map(function($f) {
+            return [
+                'id' => $f->id,
+                'name' => $f->name,
+                'avatar_url' => $f->avatar_url,
+                'rank_data' => $f->rank_data,
+                // We don't expose room unless allowed by their privacy settings.
+                // For list, we might just load online status on frontend via Echo.
+            ];
+        });
+
+        $pendingRequests = $user->receivedFriendships()
+            ->where('status', 'pending')
+            ->with('sender.rank')
+            ->get()
+            ->map(function($f) {
+                return [
+                    'id' => $f->id, // Friendship ID for Accepting
+                    'user' => $f->sender,
+                    'created_at' => $f->created_at->diffForHumans(),
+                ];
+            });
+
+        $roomHistory = $user->visits()
+            ->with('room')
+            ->orderByDesc('last_visited_at')
+            ->take(5)
+            ->get();
+
         return Inertia::render('Dashboard', [
             'progress' => $progress,
             'rooms' => $rooms,
+            'friends' => $friends,
+            'pendingRequests' => $pendingRequests,
+            'roomHistory' => $roomHistory,
         ]);
     }
 }

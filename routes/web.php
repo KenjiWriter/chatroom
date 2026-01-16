@@ -17,6 +17,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Moderation
     Route::post('/admin/kick/{room}/{user}', [\App\Http\Controllers\ModerationController::class, 'kick'])->name('admin.kick');
     Route::post('/admin/mute/{user}', [\App\Http\Controllers\ModerationController::class, 'mute'])->name('admin.mute');
+
+    // Social
+    Route::get('/api/users/{user}/hover-card', [\App\Http\Controllers\UserController::class, 'hoverCard'])->name('users.hover-card');
+    Route::post('/friendships/{user}', [\App\Http\Controllers\FriendshipController::class, 'store'])->name('friendships.store');
+    Route::put('/friendships/{id}', [\App\Http\Controllers\FriendshipController::class, 'update'])->name('friendships.update');
+    Route::delete('/friendships/{id}', [\App\Http\Controllers\FriendshipController::class, 'destroy'])->name('friendships.destroy');
 });
 
 Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified']], function () {
