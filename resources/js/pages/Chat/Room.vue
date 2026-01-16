@@ -12,6 +12,9 @@ import axios from 'axios';
 import { toast } from 'vue-sonner';
 import { route } from 'ziggy-js';
 import { resolveAsset } from '@/lib/utils';
+import GifPicker from '@/components/GifPicker.vue';
+import { Smile } from 'lucide-vue-next';
+import { onClickOutside } from '@vueuse/core';
 
 const props = defineProps<{
     room: any;
@@ -26,6 +29,10 @@ const messagesContainer = ref<HTMLElement | null>(null);
 const sending = ref(false);
 const isMuted = ref(false);
 const muteExpiresAt = ref<Date | null>(null);
+
+const showGifPicker = ref(false);
+const gifPickerRef = ref(null);
+onClickOutside(gifPickerRef, () => showGifPicker.value = false);
 
 const page = usePage();
 const currentUser = page.props.auth.user;
@@ -94,6 +101,47 @@ const sendMessage = async () => {
         } else {
              toast.error('Failed to send message.');
         }
+    } finally {
+        sending.value = false;
+    }
+};
+
+const sendGif = async (gif: any) => {
+    if (sending.value || isMuted.value) return;
+    
+    showGifPicker.value = false;
+    sending.value = true;
+    
+    const tempId = generateTempId();
+    const optimisticMessage = {
+        id: tempId,
+        content: gif.url,
+        type: 'gif',
+        metadata: { width: gif.width, height: gif.height, title: gif.title },
+        user_id: currentUser.id,
+        user: currentUser,
+        created_at: new Date().toISOString(),
+        is_sending: true,
+        is_system_message: false,
+    };
+
+    messages.value.push(optimisticMessage);
+    scrollToBottom();
+
+    try {
+        const response = await axios.post(route('chat.message', props.room.slug), {
+            content: gif.url,
+            type: 'gif',
+            metadata: { width: gif.width, height: gif.height, title: gif.title }
+        });
+
+        const index = messages.value.findIndex(m => m.id === tempId);
+        if (index !== -1) {
+            messages.value[index] = response.data.message;
+        }
+    } catch (error) {
+        messages.value = messages.value.filter(m => m.id !== tempId);
+        toast.error('Failed to send GIF.');
     } finally {
         sending.value = false;
     }
@@ -330,15 +378,26 @@ onUnmounted(() => {
                                 </div>
 
                                 <div 
-                                    class="relative px-5 py-3 text-sm shadow-sm leading-relaxed"
+                                    class="relative text-sm shadow-sm leading-relaxed overflow-hidden"
                                     :class="[
                                         msg.user_id === currentUser.id 
                                             ? 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm' 
                                             : 'bg-muted/80 text-foreground border border-border/50 rounded-2xl rounded-tl-sm',
-                                        msg.is_sending ? 'opacity-70' : ''
+                                        msg.is_sending ? 'opacity-70' : '',
+                                        msg.type === 'gif' ? 'p-1' : 'px-5 py-3'
                                     ]"
                                 >
-                                    {{ msg.content }}
+                                    <template v-if="msg.type === 'gif'">
+                                        <img 
+                                            :src="msg.content" 
+                                            :alt="msg.metadata?.title || 'GIF'"
+                                            class="rounded-xl max-w-full h-auto max-h-[300px] object-contain"
+                                            loading="lazy"
+                                        />
+                                    </template>
+                                    <template v-else>
+                                        {{ msg.content }}
+                                    </template>
                                 </div>
                                 <span v-if="msg.is_sending" class="text-[10px] text-muted-foreground mt-1">Sending...</span>
                             </div>
@@ -361,23 +420,45 @@ onUnmounted(() => {
                     </div>
 
                     <form @submit.prevent="sendMessage" class="relative flex items-center gap-2">
-                        <Input 
-                            v-model="newMessage" 
-                            type="text" 
-                            :placeholder="isMuted ? 'You are temporarily muted.' : 'Type a message...'"
-                            class="flex-1 py-6 pl-5 pr-12 rounded-full border-muted-foreground/20 bg-muted/30 focus-visible:ring-offset-2 focus-visible:ring-primary/20 shadow-sm"
-                            @input="handleTyping"
-                            :disabled="sending || isMuted"
-                        />
-                        <Button 
-                            type="submit" 
-                            size="icon"
-                            class="absolute right-2 h-10 w-10 rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
-                            :disabled="sending || !newMessage.trim() || isMuted"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-0.5"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                            <span class="sr-only">Send</span>
-                        </Button>
+                        <div class="relative flex-1">
+                            <Input 
+                                v-model="newMessage" 
+                                type="text" 
+                                :placeholder="isMuted ? 'You are temporarily muted.' : 'Type a message...'"
+                                class="w-full py-6 pl-5 pr-24 rounded-full border-muted-foreground/20 bg-muted/30 focus-visible:ring-offset-2 focus-visible:ring-primary/20 shadow-sm"
+                                @input="handleTyping"
+                                :disabled="sending || isMuted"
+                            />
+                            
+                            <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                <div ref="gifPickerRef" class="relative">
+                                    <Button 
+                                        type="button"
+                                        variant="ghost" 
+                                        size="icon" 
+                                        class="h-9 w-9 rounded-full text-muted-foreground hover:text-primary transition-colors"
+                                        @click="showGifPicker = !showGifPicker"
+                                        :disabled="sending || isMuted"
+                                    >
+                                        <Smile class="h-5 w-5" />
+                                    </Button>
+
+                                    <div v-if="showGifPicker" class="absolute bottom-full right-0 mb-4 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                        <GifPicker @select="sendGif" />
+                                    </div>
+                                </div>
+
+                                <Button 
+                                    type="submit" 
+                                    size="icon"
+                                    class="h-9 w-9 rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+                                    :disabled="sending || !newMessage.trim() || isMuted"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-0.5"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                                    <span class="sr-only">Send</span>
+                                </Button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
