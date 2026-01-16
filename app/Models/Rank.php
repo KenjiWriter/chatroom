@@ -25,6 +25,14 @@ class Rank extends Model
         'priority' => 'integer',
     ];
 
+    public function getPrefixAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+        return trim($value, '[]');
+    }
+
     public function users(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(User::class);

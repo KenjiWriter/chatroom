@@ -42,7 +42,7 @@ class RankPermissionSeeder extends Seeder
         $adminRank = Rank::updateOrCreate(
             ['name' => 'Admin'],
             [
-                'prefix' => '[Admin]',
+                'prefix' => 'Admin',
                 'color_prefix' => '#ff0000',
                 'color_name' => '#ff0000',
                 'color_text' => '#ffffff',

@@ -25,6 +25,13 @@ const rankColors = computed(() => {
         text: props.rank.color_text || '#333333',
     };
 });
+
+const formattedPrefix = computed(() => {
+    if (!props.rank.prefix) return '';
+    // Strip existing brackets if they exist and re-wrap
+    const stripped = props.rank.prefix.toString().replace(/^\[+|\]+$/g, '');
+    return `[${stripped}]`;
+});
 </script>
 
 <template>
@@ -36,7 +43,7 @@ const rankColors = computed(() => {
                 :style="{ color: rankColors.prefix }"
                 class="font-medium"
             >
-                [{{ rank.prefix }}]
+                {{ formattedPrefix }}
             </span>
             
             <!-- Name -->
