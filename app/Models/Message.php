@@ -16,6 +16,11 @@ class Message extends Model
         'user_id',
         'room_id',
         'content',
+        'is_system_message',
+    ];
+
+    protected $casts = [
+        'is_system_message' => 'boolean',
     ];
 
     public function user(): BelongsTo

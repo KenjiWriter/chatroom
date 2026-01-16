@@ -43,10 +43,14 @@ class RoomController extends Controller
         ]);
     }
 
-    public function storeMessage(Request $request, Room $room, ChatService $chatService)
+    public function storeMessage(Request $request, Room $room, ChatService $chatService, \App\Services\ModerationService $moderationService)
     {
         if (! $room->checkAccess(auth()->user())) {
             abort(403, 'Unauthorized.');
+        }
+
+        if ($moderationService->isMuted(auth()->user(), $room)) {
+            return response()->json(['message' => 'You are muted.'], 403);
         }
 
         $request->validate([

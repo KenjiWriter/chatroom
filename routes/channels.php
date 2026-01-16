@@ -31,3 +31,7 @@ Broadcast::channel('chat.room.presence.{id}', function (User $user, int $id) {
 
     return false;
 });
+
+Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});

@@ -18,6 +18,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/chat', [\App\Http\Controllers\RoomController::class, 'index'])->name('chat.index');
     Route::get('/chat/{room:slug}', [\App\Http\Controllers\RoomController::class, 'show'])->name('chat.room');
     Route::post('/chat/{room:slug}/message', [\App\Http\Controllers\RoomController::class, 'storeMessage'])->name('chat.message');
+    
+    // Moderation
+    Route::post('/admin/kick/{room}/{user}', [\App\Http\Controllers\ModerationController::class, 'kick'])->name('admin.kick');
+    Route::post('/admin/mute/{user}', [\App\Http\Controllers\ModerationController::class, 'mute'])->name('admin.mute');
 });
 
 Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified']], function () {
