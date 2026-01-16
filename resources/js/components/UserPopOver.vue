@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserPlus, UserMinus, Shield, MessageSquare, Clock, Check, X, Ban } from 'lucide-vue-next';
 import axios from 'axios';
@@ -67,19 +68,26 @@ const updateRank = async (rankId: string) => {
     }
 };
 
-const handleModeration = async (type: string, data: any) => {
-    try {
-        const url = type === 'kick' 
-            ? route('admin.kick', { room: data.roomId, user: data.userId })
-            : route('admin.mute', { user: data.userId });
-            
-        await axios.post(url, data);
-        toast.success(`User ${type}ed successfully.`);
-        isModModalOpen.value = false;
-        // Optionally reload or broadcast
-    } catch (e: any) {
-        toast.error(e.response?.data?.message || `Failed to ${type} user.`);
-    }
+const handleModeration = (type: string, data: any) => {
+    const url = type === 'kick' 
+        ? route('admin.kick', { room: data.roomId, user: data.userId })
+        : (type === 'ban' ? route('admin.ban', { user: data.userId }) : route('admin.mute', { user: data.userId }));
+        
+    router.post(url, data, {
+        onSuccess: () => {
+            isModModalOpen.value = false;
+            toast.success(`User ${type}ed successfully.`);
+        },
+        onError: (errors) => {
+            console.error(errors);
+            toast.error(`Failed to ${type} user.`);
+            // Optionally close even on error if preferred, but usually keep open to show errors
+            // isModModalOpen.value = false;
+        },
+        onFinish: () => {
+            // Cleanup if needed
+        }
+    });
 };
 
 const fetchUserData = async () => {

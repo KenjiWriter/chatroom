@@ -4,13 +4,12 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class UserKicked implements ShouldBroadcast
+class UserPunished implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -19,8 +18,10 @@ class UserKicked implements ShouldBroadcast
      */
     public function __construct(
         public int $userId,
-        public int $roomId,
-        public string $reason
+        public string $type, // 'kick', 'mute', 'ban'
+        public string $reason,
+        public ?string $duration = null,
+        public ?string $expiresAt = null
     ) {}
 
     /**
@@ -31,7 +32,7 @@ class UserKicked implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('chat.room.' . $this->roomId),
+            new PrivateChannel('user-notifications.' . $this->userId),
         ];
     }
 }

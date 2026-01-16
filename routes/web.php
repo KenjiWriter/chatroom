@@ -18,6 +18,7 @@ Route::middleware(['auth'])->group(function () {
     // Moderation
     Route::post('/admin/kick/{room}/{user}', [\App\Http\Controllers\ModerationController::class, 'kick'])->name('admin.kick');
     Route::post('/admin/mute/{user}', [\App\Http\Controllers\ModerationController::class, 'mute'])->name('admin.mute');
+    Route::post('/admin/ban/{user}', [\App\Http\Controllers\ModerationController::class, 'ban'])->name('admin.ban');
 
     // Social
     Route::get('/api/users/{user}/hover-card', [\App\Http\Controllers\UserController::class, 'hoverCard'])->name('users.hover-card');

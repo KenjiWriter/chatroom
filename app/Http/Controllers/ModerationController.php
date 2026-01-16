@@ -61,31 +61,22 @@ class ModerationController extends Controller
     public function ban(Request $request, User $user)
     {
         if (! auth()->user()->hasPermission('ban_room_access')) {
-            abort(403, 'You do not have permission to restrict room access.');
+            abort(403, 'You do not have permission to ban users.');
         }
 
         $request->validate([
             'reason' => 'required|string|max:255',
             'duration' => 'nullable|integer|min:1',
-            'room_id' => 'required|exists:rooms,id' // Room Ban is specifically for rooms
         ]);
 
-        $room = Room::findOrFail($request->input('room_id'));
-
-        // For now, "ban" in ModerationService handles global bans. 
-        // We'll add restrictAccess or use mute logic if it fits.
-        // Actually, the user asked for "ban_room_access", which I conceptualized as RoomBan.
-        // Let's use the mute logic with a flag or a new method.
-        
-        $this->moderationService->mute(
+        $this->moderationService->ban(
             auth()->user(), 
             $user, 
-            $room, 
             $request->input('duration') ? (int)$request->input('duration') : null, 
             $request->input('reason')
         );
 
-        return back()->with('success', 'User restricted from room.');
+        return back()->with('success', 'User banned globally.');
     }
     
     // Ban implementation similar...

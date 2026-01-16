@@ -21,25 +21,26 @@ const props = defineProps<{
     initialMessages: any[];
 }>();
 
+const page = usePage();
+const currentUser = page.props.auth.user;
+
 const messages = ref<any[]>([...props.initialMessages]);
 const newMessage = ref('');
 const onlineUsers = ref<any[]>([]);
 const typingUsers = ref<any[]>([]);
 const messagesContainer = ref<HTMLElement | null>(null);
 const sending = ref(false);
-const isMuted = ref(false);
-const muteExpiresAt = ref<Date | null>(null);
+
+const user = computed(() => page.props.auth.user as any);
+const isMuted = ref(user.value?.mute_data ? true : false);
+const muteData = ref(user.value?.mute_data || null);
 
 const showGifPicker = ref(false);
 const gifPickerRef = ref(null);
 onClickOutside(gifPickerRef, () => showGifPicker.value = false);
 
-const page = usePage();
-const currentUser = page.props.auth.user;
-// Helper for permission check - assuming shared props has permission structure
+// Helper for permission check
 const canModerate = computed(() => {
-    // Basic check: if user has any mod permission. 
-    // Ideally use page.props.auth.user.permissions generic check or specific ones.
     const perms = (page.props.auth.user as any).permissions || [];
     return perms.some((p: any) => ['kick_user', 'mute_user', 'ban_user'].includes(p.slug));
 });
@@ -217,9 +218,16 @@ const submitBan = async (payload: any) => {
 
 // Countdown Logic
 const muteTimeRemaining = computed(() => {
-    if (!muteExpiresAt.value) return 'Permanently';
-    // Simplified, real countdown would use ticking ref
-    return 'Until ' + muteExpiresAt.value.toLocaleTimeString(); 
+    if (!muteData.value) return '';
+    if (!muteData.value.expires_at) return 'Permanently';
+    
+    const expiry = new Date(muteData.value.expires_at);
+    if (expiry < new Date()) {
+        isMuted.value = false;
+        return '';
+    }
+    
+    return 'Until ' + expiry.toLocaleTimeString() + (muteData.value.reason ? ` (${muteData.value.reason})` : '');
 });
 
 onMounted(() => {
@@ -227,15 +235,18 @@ onMounted(() => {
 
     // Listen for Personal Restrictions (Mutes/Bans)
     // @ts-ignore
-    window.Echo.private(`App.Models.User.${currentUser.id}`)
-        .listen('UserRestricted', (e: any) => {
+    window.Echo.private(`user-notifications.${currentUser.id}`)
+        .listen('UserPunished', (e: any) => {
             if (e.type === 'mute') {
                 isMuted.value = true;
-                muteExpiresAt.value = e.expiresAt ? new Date(e.expiresAt) : null;
-                toast.warning(`You have been muted: ${e.reason}`);
+                muteData.value = {
+                    reason: e.reason,
+                    expires_at: e.expiresAt || null, // Ensure backend sends ISO string
+                    room_id: e.roomId || null
+                };
             } else if (e.type === 'ban') {
-                // Force redirect
-                router.visit('/');
+                // AppLayout handles the overlay, so we don't need to do much here, 
+                // but we could redirect if we wanted to be double sure.
             }
         });
 
@@ -248,10 +259,9 @@ onMounted(() => {
                 scrollToBottom();
             }
         })
-        .listen('UserKicked', (e: any) => {
-            if (e.userId === currentUser.id) {
-                toast.error(`You were kicked: ${e.reason}`);
-                router.visit(route('dashboard'));
+        .listen('UserPunished', (e: any) => {
+            if (e.userId === currentUser.id && e.type === 'kick') {
+                // AppLayout handles the toast and redirect, we just stop local processing
             }
         })
         .listenForWhisper('typing', (e: any) => {
@@ -425,7 +435,7 @@ onUnmounted(() => {
                             <Input 
                                 v-model="newMessage" 
                                 type="text" 
-                                :placeholder="isMuted ? 'You are temporarily muted.' : 'Type a message...'"
+                                :placeholder="isMuted ? (muteData?.reason ? `Muted: ${muteData.reason}` : 'You are temporarily muted.') : 'Type a message...'"
                                 class="w-full py-6 pl-5 pr-24 rounded-full border-muted-foreground/20 bg-muted/30 focus-visible:ring-offset-2 focus-visible:ring-primary/20 shadow-sm"
                                 @input="handleTyping"
                                 :disabled="sending || isMuted"

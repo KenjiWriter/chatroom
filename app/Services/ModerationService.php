@@ -3,8 +3,7 @@
 namespace App\Services;
 
 use App\Events\MessageSent;
-use App\Events\UserKicked;
-use App\Events\UserRestricted;
+use App\Events\UserPunished;
 use App\Models\Ban;
 use App\Models\Message;
 use App\Models\Mute;
@@ -35,8 +34,8 @@ class ModerationService
     {
         $this->ensureCanModerate($moderator, $target);
 
-        // Broadcast Kick Event
-        broadcast(new UserKicked($target->id, $room->id, $reason))->toOthers();
+        // Broadcast Punished Event
+        broadcast(new UserPunished($target->id, 'kick', $reason));
 
         // System Message
         $this->createSystemMessage($room, "{$target->name} was kicked by {$moderator->name}. Reason: {$reason}");
@@ -56,12 +55,13 @@ class ModerationService
             'reason' => $reason,
         ]);
 
-        // Broadcast Restriction to User
-        broadcast(new UserRestricted(
+        // Broadcast Punished Event
+        broadcast(new UserPunished(
             $target->id, 
             'mute', 
-            $expiresAt?->toIso8601String(), 
-            $reason
+            $reason,
+            $minutes ? "{$minutes} minutes" : "permanently",
+            $expiresAt?->toIso8601String()
         ));
 
         // System Message
@@ -87,22 +87,17 @@ class ModerationService
         Ban::create([
             'user_id' => $target->id,
             'moderator_id' => $moderator->id,
-            'ip_address' => request()->ip(), // Best guess or store last known IP on User model?
-            // For real robustness, User model should track last_ip. Using request() might be Mod's IP if not careful, 
-            // but controller passes request context? No, this service might be called from job.
-            // Requirement says "bans table... ip_address". 
-            // Let's assume we don't have target's IP readily available unless tracked.
-            // For now, leave IP null if not tracked, or implementation detail: 
-            // Only ban User ID. CheckIpBan middleware handles ID checks too.
+            'ip_address' => request()->ip(), 
             'expires_at' => $expiresAt,
             'reason' => $reason,
         ]);
 
-        broadcast(new UserRestricted(
+        broadcast(new UserPunished(
             $target->id, 
             'ban', 
-            $expiresAt?->toIso8601String(), 
-            $reason
+            $reason,
+            $minutes ? "{$minutes} minutes" : "permanently",
+            $expiresAt?->toIso8601String()
         ));
     }
 

@@ -107,7 +107,17 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Rank::class);
     }
 
-    protected $appends = ['rank_data'];
+    public function mutes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Mute::class);
+    }
+
+    public function bans(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Ban::class);
+    }
+
+    protected $appends = ['rank_data', 'is_banned', 'ban_data', 'mute_data'];
 
     /**
      * Get the user's rank data structure for frontend.
@@ -159,6 +169,35 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(Conversation::class)
             ->withTimestamps();
+    }
+
+    public function getIsBannedAttribute(): bool
+    {
+        return $this->bans()->active()->exists();
+    }
+
+    public function getBanDataAttribute(): ?array
+    {
+        $ban = $this->bans()->active()->latest()->first();
+        if (!$ban) return null;
+
+        return [
+            'reason' => $ban->reason,
+            'expires_at' => $ban->expires_at?->toIso8601String(),
+            'moderator' => $ban->moderator->name,
+        ];
+    }
+
+    public function getMuteDataAttribute(): ?array
+    {
+        $mute = $this->mutes()->active()->latest()->first();
+        if (!$mute) return null;
+
+        return [
+            'reason' => $mute->reason,
+            'expires_at' => $mute->expires_at?->toIso8601String(),
+            'room_id' => $mute->room_id,
+        ];
     }
 
     /**
