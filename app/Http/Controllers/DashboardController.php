@@ -30,6 +30,7 @@ class DashboardController extends Controller
             'relative_xp' => $relativeXp,
             'needed_for_next' => $neededForNext,
             'percent' => min(100, round(($relativeXp / $neededForNext) * 100)),
+            'next_level' => $user->level + 1,
         ];
 
         // Active Rooms

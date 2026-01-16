@@ -19,9 +19,9 @@ class LevelService
             return 1;
         }
 
-        // Formula: XP = level^2 * coefficient
-        // Level = sqrt(XP / coefficient)
-        return (int) floor(sqrt($xp / $coefficient)) ?: 1;
+        // Formula: XP = (level - 1)^2 * coefficient
+        // Level = floor(sqrt(XP / coefficient)) + 1
+        return (int) floor(sqrt($xp / $coefficient)) + 1;
     }
 
     /**
@@ -30,7 +30,7 @@ class LevelService
     public function xpForLevel(int $level): int
     {
         $coefficient = config('chat.leveling.coefficient', 100);
-        return ($level ** 2) * $coefficient;
+        return (($level - 1) ** 2) * $coefficient;
     }
 
     /**
