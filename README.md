@@ -23,10 +23,11 @@
 
 ## ✨ Core Features
 
-### 👤 User Social System
+### 👤 User Social System & XP
 A comprehensive profile and engagement engine.
 - **Dynamic Profiles**: Native file uploads for **Avatars** and **Banners**, custom **Bio**, and real-time XP tracking.
-- **RPG Leveling**: Automated XP awarding with anti-spam cooldowns and visual "Level Up" notifications.
+- **Dynamic Experience System**: Automated XP awarding with anti-spam cooldowns and visual "Level Up" notifications.
+- **Fixed XP Progress Bars**: Progress calculation is standardized with Level 1 starting at 0 XP, ensuring accurate visual feedback.
 - **HoverCards**: Interactive profile previews (via Shadcn) appearing throughout the chat for quick social interaction.
 
 ### 🤝 Friendship & Presence
@@ -45,16 +46,17 @@ Seamless 1-on-1 communication outside public rooms.
 Strict access control for community safety.
 - **Verification Flow**: New users are restricted to a dedicated **"Guest Room"** until email verification.
 - **Automatic Promotion**: Users are automatically upgraded from `Guest` to `User` rank upon successful verification.
-- **Testing Tools**: Custom CLI commands for rapid developer testing.
 
-### 🖼️ GIF Integration (Giphy)
+### 🖼️ Giphy Integration
 Express yourself with rich media.
-- **Giphy Search**: Integrated GIF picker with debounced search and trending categories.
+- **Real-Time Search**: Integrated GIF picker with debounced search and trending categories.
 - **Optimized Rendering**: Lazy-loaded GIFs with rounded corners and consistent UI integration.
 
-### 🛡️ Moderation Suite
+### 🛡️ Moderation & Administration
+- **Advanced Admin Tools**: Instantly promote users via CLI and manage the community with real-time tools.
 - **Granular Permissions**: Hierarchy-based moderation (Mute, Kick, Ban).
 - **Instant Enforcement**: Real-time UI lockouts and redirects for restricted users.
+- **Rank Prefixes**: Visual prefixes (e.g., `[Admin]`) are intelligently handled by the UI. *Note: Brackets are no longer stored in the database.*
 
 ---
 
@@ -62,7 +64,7 @@ Express yourself with rich media.
 
 | Dashboard | Chat Room | User Popover |
 | :---: | :---: | :---: |
-| ![Dashboard Placeholder](https://placehold.co/600x400?text=Dashboard+Overview) | ![Chat Placeholder](https://placehold.co/600x400?text=Chat+Room+Interface) | ![Popover Placeholder](https://placehold.co/600x400?text=User+Profile+Popover) |
+| ![Dashboard](docs/dashboard.png) | ![Chat Room](docs/chatroom.png) | ![User Popover](docs/player_brick.png) |
 
 ---
 
@@ -114,12 +116,12 @@ Express yourself with rich media.
    php artisan serve
    ```
 
-### 🛠 Custom Commands
+### 🛠 Custom Commands (CLI)
 
 | Command | Description |
 | :--- | :--- |
 | `php artisan user:verify {email}` | Manually verify a user's email and upgrade their rank to User. |
-| `php artisan user:set-admin {email}` | Directly assign the Administrator rank to a specific user. |
+| `php artisan user:set-admin {email}` | Instantly promote a user to the Administrator rank. |
 | `php artisan db:seed --class=RankPermissionSeeder` | Refresh the rank and permission hierarchy. |
 
 ---
