@@ -273,6 +273,7 @@ onUnmounted(() => {
                             <RankedUserLabel 
                                 :rank="msg.user.rank_data" 
                                 :name="msg.user.name"
+                                :user-id="msg.user_id"
                                 :show-moderation-tools="canModerate && msg.user_id !== currentUser.id"
                                 @moderate="openModModal(msg.user)"
                                 class="mb-1"
@@ -338,6 +339,7 @@ onUnmounted(() => {
                         <RankedUserLabel 
                             :rank="user.rank_data" 
                             :name="user.name"
+                            :user-id="user.id"
                             :show-message="false"
                             :show-moderation-tools="canModerate && user.id !== currentUser.id"
                             @moderate="openModModal(user)"
