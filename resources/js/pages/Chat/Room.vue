@@ -7,9 +7,11 @@ import UserPopOver from '@/components/UserPopOver.vue';
 import ModerationModal from '@/components/ModerationModal.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import axios from 'axios';
 import { toast } from 'vue-sonner';
 import { route } from 'ziggy-js';
+import { resolveAsset } from '@/lib/utils';
 
 const props = defineProps<{
     room: any;
@@ -299,12 +301,12 @@ onUnmounted(() => {
                                     :name="msg.user.name"
                                 >
                                     <Avatar class="h-10 w-10 border border-border cursor-pointer hover:ring-2 hover:ring-ring transition-all">
-                                        <AvatarImage :src="msg.user.avatar_url" />
+                                        <AvatarImage :src="resolveAsset(msg.user.avatar_url, 'avatar', msg.user.name) as string" />
                                         <AvatarFallback>{{ msg.user.name.substring(0,2).toUpperCase() }}</AvatarFallback>
                                     </Avatar>
                                 </UserPopOver>
                                 <Avatar v-else class="h-10 w-10 border border-border">
-                                    <AvatarImage :src="msg.user.avatar_url" />
+                                    <AvatarImage :src="resolveAsset(msg.user.avatar_url, 'avatar', msg.user.name) as string" />
                                     <AvatarFallback>{{ msg.user.name.substring(0,2).toUpperCase() }}</AvatarFallback>
                                 </Avatar>
                             </div>
@@ -395,7 +397,7 @@ onUnmounted(() => {
                          <div class="relative mr-3">
                              <UserPopOver :user-id="user.id" :name="user.name">
                                  <Avatar class="h-9 w-9 border border-border cursor-pointer">
-                                     <AvatarImage :src="user.avatar_url" />
+                                     <AvatarImage :src="resolveAsset(user.avatar_url, 'avatar', user.name) as string" />
                                      <AvatarFallback>{{ user.name.substring(0,2).toUpperCase() }}</AvatarFallback>
                                  </Avatar>
                              </UserPopOver>

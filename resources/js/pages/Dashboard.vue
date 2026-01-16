@@ -12,6 +12,7 @@ import RankedUserLabel from '@/components/RankedUserLabel.vue';
 import { Clock, MessageSquare, Check, X, User as UserIcon } from 'lucide-vue-next';
 import axios from 'axios';
 import { toast } from 'vue-sonner';
+import { resolveAsset } from '@/lib/utils';
 
 const props = defineProps<{
     progress: any;
@@ -100,19 +101,13 @@ const declineRequest = async (id: number) => {
         toast.error("Failed to decline.");
     }
 };
-const getBannerUrl = (url: string | null) => {
-    if (!url) return null;
-    if (url.startsWith('http') || url.startsWith('/storage')) return url;
-    return `/storage/${url}`;
-};
-
-const bannerSrc = ref(getBannerUrl(props.auth.user.banner_url));
+const bannerSrc = ref(resolveAsset(props.auth.user.banner_url, 'banner'));
 
 // Watch for prop changes to update the banner (e.g. after profile edit)
 // but allow local override to null if error occurs
 import { watch } from 'vue';
 watch(() => props.auth.user.banner_url, (newUrl) => {
-    bannerSrc.value = getBannerUrl(newUrl);
+    bannerSrc.value = resolveAsset(newUrl, 'banner');
 });
 
 console.log('Dashboard Banner URL:', bannerSrc.value);
@@ -144,7 +139,7 @@ console.log('Dashboard Banner URL:', bannerSrc.value);
                 <!-- Avatar (Absolute Overlap) -->
                 <div class="absolute -bottom-12 left-10 p-1 bg-card rounded-full shadow-lg">
                      <Avatar class="w-32 h-32 md:w-40 md:h-40 border-4 border-background">
-                        <AvatarImage :src="props.auth.user.avatar_url" class="object-cover" />
+                        <AvatarImage :src="resolveAsset(props.auth.user.avatar_url, 'avatar', props.auth.user.name) as string" class="object-cover" />
                         <AvatarFallback class="text-3xl font-bold">{{ props.auth.user.name.substring(0,2).toUpperCase() }}</AvatarFallback>
                      </Avatar>
                 </div>
@@ -277,7 +272,7 @@ console.log('Dashboard Banner URL:', bannerSrc.value);
                                         <div class="flex items-center gap-3">
                                             <div class="relative">
                                                 <Avatar>
-                                                    <AvatarImage :src="friend.avatar_url" />
+                                                    <AvatarImage :src="resolveAsset(friend.avatar_url, 'avatar', friend.name) as string" />
                                                     <AvatarFallback>{{ friend.name.substring(0,2).toUpperCase() }}</AvatarFallback>
                                                 </Avatar>
                                                 <span 
@@ -310,7 +305,7 @@ console.log('Dashboard Banner URL:', bannerSrc.value);
                                     <div v-for="req in pendingRequests" :key="req.id" class="flex items-center justify-between bg-muted/50 p-2 rounded-lg">
                                         <div class="flex items-center gap-3">
                                             <Avatar class="h-9 w-9">
-                                                <AvatarImage :src="req.user.avatar_url" />
+                                                <AvatarImage :src="resolveAsset(req.user.avatar_url, 'avatar', req.user.name) as string" />
                                                 <AvatarFallback>{{ req.user.name.substring(0,2) }}</AvatarFallback>
                                             </Avatar>
                                             <div class="flex flex-col">

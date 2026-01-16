@@ -9,6 +9,7 @@ import axios from 'axios';
 import { route } from 'ziggy-js';
 import { toast } from 'vue-sonner';
 import { usePage, router } from '@inertiajs/vue3';
+import { resolveAsset } from '@/lib/utils';
 
 const props = defineProps<{
     userId: number;
@@ -90,8 +91,9 @@ const unfriend = async (id: number) => {
 
 // Fallback visual
 const bannerStyle = computed(() => {
-    if (userData.value?.banner_url) {
-        return { backgroundImage: `url(${userData.value.banner_url})` };
+    const resolved = resolveAsset(userData.value?.banner_url, 'banner');
+    if (resolved) {
+        return { backgroundImage: `url(${resolved})` };
     }
     const color = userData.value?.rank_data?.color_name || '#666';
     return { background: `linear-gradient(to right, ${color}, #333)` };
@@ -123,7 +125,7 @@ const bannerStyle = computed(() => {
                 <div class="px-4 pb-4 -mt-10">
                     <div class="flex justify-between items-end">
                         <Avatar class="h-20 w-20 border-4 border-white dark:border-gray-900">
-                            <AvatarImage :src="userData.avatar_url" />
+                            <AvatarImage :src="resolveAsset(userData.avatar_url, 'avatar', userData.name) as string" />
                             <AvatarFallback>{{ userData.name.substring(0,2).toUpperCase() }}</AvatarFallback>
                         </Avatar>
                         
