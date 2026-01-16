@@ -6,7 +6,7 @@
 ![Reverb](https://img.shields.io/badge/Real--Time-Reverb-orange?style=for-the-badge&logo=laravel)
 ![PHP](https://img.shields.io/badge/PHP-8.4+-777BB4?style=for-the-badge&logo=php)
 
-**ChatRooms** is a scalable, modular, and high-performance real-time chat application built with modern web technologies. It combines robust backend architecture with a dynamic, reactive frontend to deliver an immersive community experience featuring RPG-style progression, granule permission management, and real-time moderation.
+**ChatRooms** is a scalable, modular, and high-performance real-time chat application. It combines robust backend architecture with a dynamic, reactive frontend to deliver an immersive community experience featuring RPG-style progression, granule permission management, and a complete social ecosystem.
 
 ---
 
@@ -14,51 +14,63 @@
 
 - **Backend Protocol**: Laravel 13 (PHP 8.4+) utilizing robust Service Pattern architecture.
 - **Frontend Engine**: Vue 3 (Composition API) via Inertia.js for a seamless SPA experience.
-    - *Routing*: Dynamic **Ziggy** integration via Inertia Shared Data (no CLI generation required).
-- **Real-Time Layer**: **Laravel Reverb** (WebSocket server) + **Laravel Echo** for instant messaging, presence tracking, and events.
-- **Styling**: Tailwind CSS & ShadCN UI for modern, accessible components.
+    - *Routing*: Dynamic **Ziggy** integration (shared dynamically via Inertia).
+- **Real-Time Layer**: **Laravel Reverb** (High-performance WebSocket server) + **Laravel Echo**.
+- **Styling & Components**: Tailwind CSS & **Shadcn Vue** for premium, accessible UI components (HoverCards, Popovers, Modals).
 - **Database**: PostgreSQL/MySQL optimized for chat indexing and JSON-based configuration.
 
 ---
 
 ## ✨ Core Features
 
-### 👑 Advanced Rank & Permission System
-A fully dynamic role-management engine allowing granular control over user capabilities and aesthetics.
-- **Visual Customization**: Ranks support complex visual effects like `Glow`, `Rainbow` animations, and custom colors stored via JSON.
-- **Hierarchy Protection**: Strict priority-based logic ensures moderators cannot act against users with equal or higher rank.
-- **Granular Permissions**: System-based checks (e.g., `mute_user`, `bypass_lock`) enable fine-tuned access control.
+### 👤 User Social System
+A comprehensive profile and engagement engine.
+- **Dynamic Profiles**: Native file uploads for **Avatars** and **Banners**, custom **Bio**, and real-time XP tracking.
+- **RPG Leveling**: Automated XP awarding with anti-spam cooldowns and visual "Level Up" notifications.
+- **HoverCards**: Interactive profile previews (via Shadcn) appearing throughout the chat for quick social interaction.
 
-### ⚡ Real-Time Engine (Reverb)
-Powered by WebSockets for an instantaneous user experience.
-- **Live Messaging**: Zero-latency message delivery with optimistic UI updates.
-- **Presence Channels**: "Who's Online" sidebars that update instantly when users join or leave.
-- **Typing Indicators**: "Whisper" events show when users are composing messages without hitting the database.
-- **System Events**: Real-time broadcasts for user kicks, bans, and system announcements.
+### 🤝 Friendship & Presence
+Building connections within the community.
+- **Friendship Lifecycle**: Send, receive, and manage friend requests.
+- **Global Presence**: Real-time "Total Online" indicator and room-specific presence lists.
+- **Privacy Control**: Ability to block users and manage social visibility.
 
-### ⚔️ RPG Leveling System
-Gamification features to drive user engagement.
-- **XP Algorithm**: Intelligent XP awarding with anti-spam cooldowns (configurable via `config/chat.php`).
-- **Progression**: Visual level indicators and "Level Up" toast notifications.
-- **Access Control**: Chat rooms can be locked behind specific **Level** or **Rank** requirements.
+### ✉️ Private Messaging (DM)
+Seamless 1-on-1 communication outside public rooms.
+- **Real-Time DMs**: Instant message delivery via dedicated private channels.
+- **Persistence**: Full conversation history with "Mark as Read" synchronization.
+- **Smart Sidebar**: Dedicated Direct Messages section with real-time **Unread Notification Badges**.
 
-### 🛡️ Real-Time Moderation Suite
-A comprehensive toolset for community management with immediate enforcement.
-- **Instant Mutes**: Disables the chat input for the target user in real-time and rejects backend requests (403).
-- **Hard Kicks**: Triggers a browser event that immediately redirects the user out of the chat room.
-- **IP Banning**: Global Middleware (`CheckIpBan`) blocks restricted IP addresses at the application firewall level.
-- **Contextual Tools**: Moderators get a dedicated UI (Shield Icon permissions) to open moderation modals directly from the chat stream.
+### 🔐 Account Verification Gate
+Strict access control for community safety.
+- **Verification Flow**: New users are restricted to a dedicated **"Guest Room"** until email verification.
+- **Automatic Promotion**: Users are automatically upgraded from `Guest` to `User` rank upon successful verification.
+- **Testing Tools**: Custom CLI commands for rapid developer testing.
+
+### 🖼️ GIF Integration (Giphy)
+Express yourself with rich media.
+- **Giphy Search**: Integrated GIF picker with debounced search and trending categories.
+- **Optimized Rendering**: Lazy-loaded GIFs with rounded corners and consistent UI integration.
+
+### 🛡️ Moderation Suite
+- **Granular Permissions**: Hierarchy-based moderation (Mute, Kick, Ban).
+- **Instant Enforcement**: Real-time UI lockouts and redirects for restricted users.
+
+---
+
+## 📸 Visuals
+
+| Dashboard | Chat Room | User Popover |
+| :---: | :---: | :---: |
+| ![Dashboard Placeholder](https://placehold.co/600x400?text=Dashboard+Overview) | ![Chat Placeholder](https://placehold.co/600x400?text=Chat+Room+Interface) | ![Popover Placeholder](https://placehold.co/600x400?text=User+Profile+Popover) |
 
 ---
 
 ## 🏛 Software Architecture
 
-This project adheres to **SOLID principles** and Clean Code practices to ensure scalability.
-
-- **Service Pattern**: Business logic (e.g., `LevelService`, `ChatService`, `ModerationService`) is decoupled from Controllers.
-- **Middleware Security**: Custom middleware like `CheckIpBan` and broad usage of Authorization Policies.
-- **Single Source of Truth**: The frontend relies on reusable, intelligent components like `RankedUserLabel.vue` which handles rank visualization logic centrally.
-- **Optimistic UI**: The chat interface updates state locally before network confirmation to ensure perceived instantaneity.
+- **Service Pattern**: Business logic (e.g., `LevelService`, `ChatService`, `FriendshipService`) is decoupled from Controllers.
+- **Standardized Broadcasting**: Unified channel naming (e.g., `conversations.{id}`, `chat.room.{id}`) for predictable real-time messaging.
+- **Environment Driven**: Sensitive keys (like Giphy API) are managed via `.env` variables for security.
 
 ---
 
@@ -71,59 +83,44 @@ This project adheres to **SOLID principles** and Clean Code practices to ensure 
 
 ### Installation
 
-1. **Clone the Repository**
+1. **Clone & Dependencies**
    ```bash
    git clone git@github.com:yourusername/chatrooms.git
-   cd chatrooms
+   composer install && npm install
    ```
 
-2. **Install Dependencies**
-   ```bash
-   composer install
-   npm install
-   ```
-
-3. **Environment Setup**
+2. **Environment Setup**
    ```bash
    cp .env.example .env
    php artisan key:generate
    ```
-   *Configure your `DB_*` and `REVERB_*` credentials in `.env`.*
+   *Required Variables:*
+   - `DB_*`: Your database credentials.
+   - `REVERB_*`: WebSocket configuration.
+   - `VITE_GIPHY_API_KEY`: Your Giphy API key.
 
-4. **Database & Migrations**
+3. **Database & Migrations**
    ```bash
    php artisan migrate --seed
    ```
-   *Note: Seeing is critical to generate default Ranks and Permissions.*
 
-5. **Routing Configuration**
-   *Note: `php artisan ziggy:generate` is **NOT** required. Routes are shared dynamically via Inertia.*
-
-5. **Start Real-Time Server**
+4. **Start Servers**
    ```bash
+   # Start WebSocket Server
    php artisan reverb:start
-   ```
-
-6. **Compile Frontend & Serve**
-   ```bash
+   
+   # Start Frontend & Application (Separate terminals)
    npm run dev
-   # In a separate terminal
-    php artisan serve
+   php artisan serve
    ```
 
-## ❓ Troubleshooting
+### 🛠 Custom Commands
 
-- **Routes not working?**
-  Checks that `app/Http/Middleware/HandleInertiaRequests.php` correctly passes the `'ziggy'` object in the `share()` method. This is essential for the valid frontend routing without manual generation.
-
----
-
-## 🔮 Upcoming Features
-- [ ] **Direct Messaging (DM)**: Private 1-on-1 conversations.
-- [ ] **Rich Media Support**: Image and file uploads in chat.
-- [ ] **Emoji Picker**: Native integration for rich text responses.
-- [ ] **Audit Logs**: Deep history of all moderation actions.
+| Command | Description |
+| :--- | :--- |
+| `php artisan user:verify {email}` | Manually verify a user's email and upgrade their rank to User. |
+| `php artisan db:seed --class=RankPermissionSeeder` | Refresh the rank and permission hierarchy. |
 
 ---
 
-**Crafted with ❤️ for scalable communities.**
+**Crafted with ❤️ for scalable, engaged communities.**
