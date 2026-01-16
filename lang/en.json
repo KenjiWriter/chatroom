@@ -1,0 +1,7 @@
+{
+    "Welcome, :name": "Welcome, :name",
+    "Rank created": "Rank created successfully.",
+    "Rank updated": "Rank updated successfully.",
+    "Rank deleted": "Rank deleted successfully.",
+    "Level Up!": "Level Up! You are now level :level."
+}

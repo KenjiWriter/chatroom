@@ -7,6 +7,9 @@ import { createApp, h } from 'vue';
 
 import { initializeTheme } from './composables/useAppearance';
 
+import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+import i18n from './plugins/i18n';
+
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
@@ -19,6 +22,8 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         createApp({ render: () => h(App, props) })
             .use(plugin)
+            .use(ZiggyVue)
+            .use(i18n as any)
             .mount(el);
     },
     progress: {

@@ -39,9 +39,26 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? [
+                    ...$request->user()->toArray(), // includes appended rank_data
+                    'permissions' => function () use ($request) {
+                        return $request->user()->rank ? $request->user()->rank->permissions->pluck('slug') : [];
+                    },
+                ] : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'translations' => function () {
+                return \Illuminate\Support\Facades\Cache::rememberForever('translations_en', function () {
+                    $path = lang_path('en.json');
+                    return file_exists($path) ? json_decode(file_get_contents($path), true) : [];
+                });
+            },
+            'flash' => [
+                'message' => fn () => $request->session()->get('message'), // Generic interface
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+                'level_up' => fn () => $request->session()->get('level_up'), // Structured object
+            ],
         ];
     }
 }
