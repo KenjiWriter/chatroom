@@ -59,6 +59,20 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
                 'level_up' => fn () => $request->session()->get('level_up'), // Structured object
             ],
+            'conversations' => function () use ($request) {
+                if (! $request->user()) return [];
+                return $request->user()->conversations()
+                    ->with(['users' => function($q) use ($request) {
+                        $q->where('users.id', '!=', $request->user()->id);
+                    }, 'lastMessage'])
+                    ->withCount(['messages as unread_count' => function($q) use ($request) {
+                        $q->where('sender_id', '!=', $request->user()->id)
+                          ->whereNull('read_at');
+                    }])
+                    ->orderByDesc('last_message_at')
+                    ->take(10)
+                    ->get();
+            },
             'ziggy' => function () use ($request) {
                 return array_merge((new \Tighten\Ziggy\Ziggy)->toArray(), [
                     'location' => $request->url(),

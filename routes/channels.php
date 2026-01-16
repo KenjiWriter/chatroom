@@ -43,3 +43,11 @@ Broadcast::channel('online', function ($user) {
         'name' => $user->name,
     ];
 });
+
+Broadcast::channel('conversations.room.{id}', function ($user, int $id) {
+    return \App\Models\Conversation::find($id)->users()->where('users.id', $user->id)->exists();
+});
+
+Broadcast::channel('conversations.{id}', function ($user, int $id) {
+    return (int) $user->id === (int) $id;
+});

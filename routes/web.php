@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use App\Http\Controllers\ConversationController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -23,6 +24,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/friendships/{user}', [\App\Http\Controllers\FriendshipController::class, 'store'])->name('friendships.store');
     Route::put('/friendships/{id}', [\App\Http\Controllers\FriendshipController::class, 'update'])->name('friendships.update');
     Route::delete('/friendships/{id}', [\App\Http\Controllers\FriendshipController::class, 'destroy'])->name('friendships.destroy');
+
+    // Conversations (DMs)
+    Route::prefix('conversations')->group(function () {
+        Route::get('/', [ConversationController::class, 'index'])->name('conversations.index');
+        Route::post('/', [ConversationController::class, 'store'])->name('conversations.store');
+        Route::get('/{conversation}', [ConversationController::class, 'show'])->name('conversations.show');
+        Route::post('/{conversation}/messages', [ConversationController::class, 'sendMessage'])->name('conversations.messages.store');
+    });
 });
 
 Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified']], function () {

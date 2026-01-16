@@ -6,6 +6,7 @@ import { route } from 'ziggy-js';
 
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
+import NavDirectMessages from '@/components/NavDirectMessages.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
     Sidebar,
@@ -106,6 +107,7 @@ onUnmounted(() => {
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
+            <NavDirectMessages />
         </SidebarContent>
 
         <SidebarFooter>

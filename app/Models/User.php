@@ -149,13 +149,15 @@ class User extends Authenticatable implements MustVerifyEmail
             return false;
         }
 
-        // Preload permissions if not already loaded to avoid N+1 in loops if we access the relation
-        // However, for single checks, we might just want to check the collection.
-        // Assuming 'permissions' relation is eager loaded or we load it now.
         $hasPermission = $this->rank->permissions->contains('slug', $permission);
-
         self::$permissionsCache[$this->id][$permission] = $hasPermission;
 
         return $hasPermission;
+    }
+
+    public function conversations(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Conversation::class)
+            ->withTimestamps();
     }
 }
