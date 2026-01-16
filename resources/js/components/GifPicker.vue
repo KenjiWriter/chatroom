@@ -7,8 +7,13 @@ import axios from 'axios';
 
 const emit = defineEmits(['select']);
 
-// TODO: Replace with your actual Giphy API Key
-const GIPHY_API_KEY = 'YOUR_GIPHY_API_KEY_HERE';
+// Use environment variable for Giphy API Key
+const GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY;
+
+if (!GIPHY_API_KEY) {
+    console.warn('Giphy API Key is missing. Please add VITE_GIPHY_API_KEY to your .env file.');
+}
+
 const TRENDING_URL = `https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}&limit=20&rating=g`;
 const SEARCH_URL = `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&limit=20&rating=g&q=`;
 
