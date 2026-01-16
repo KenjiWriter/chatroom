@@ -104,7 +104,7 @@ class ModerationService
         ));
     }
 
-    public function ban(User $moderator, User $target, ?int $minutes, string $reason): void
+    public function ban(User $moderator, User $target, ?int $minutes, string $reason, ?Room $room = null): void
     {
         $this->ensureCanModerate($moderator, $target);
 
@@ -114,6 +114,7 @@ class ModerationService
         Ban::create([
             'user_id' => $target->id,
             'moderator_id' => $moderator->id,
+            'room_id' => $room?->id,
             'ip_address' => request()->ip(), 
             'expires_at' => $expiresAt,
             'reason' => $reason,
@@ -125,13 +126,54 @@ class ModerationService
             $reason,
             $minutes ? "{$minutes} minutes" : "permanently",
             $expiresAt?->toIso8601String(),
-            $moderator->name
+            $moderator->name,
+            $room?->name
+        ));
+    }
+
+    public function unban(User $moderator, User $target, ?Room $room = null): void
+    {
+        $this->ensureCanModerate($moderator, $target);
+
+        // Deactivate bans (Room specific OR Global if room is null)
+        Ban::active()
+            ->where('user_id', $target->id)
+            ->where(function ($q) use ($room) {
+                if ($room) {
+                    $q->where('room_id', $room->id);
+                } else {
+                    $q->whereNull('room_id');
+                }
+            })
+            ->update(['expires_at' => now()]);
+
+        broadcast(new UserPunished(
+            $target->id,
+            'unban',
+            'You have been unbanned.',
+            null,
+            null,
+            $moderator->name,
+            $room?->name
         ));
     }
 
     public function isMuted(User $user, ?Room $room = null): bool
     {
         return Mute::active()
+            ->where('user_id', $user->id)
+            ->where(function ($q) use ($room) {
+                $q->whereNull('room_id'); // Global
+                if ($room) {
+                    $q->orWhere('room_id', $room->id);
+                }
+            })
+            ->exists();
+    }
+
+    public function isBanned(User $user, ?Room $room = null): bool
+    {
+        return Ban::active()
             ->where('user_id', $user->id)
             ->where(function ($q) use ($room) {
                 $q->whereNull('room_id'); // Global

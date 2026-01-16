@@ -13,13 +13,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/chat', [\App\Http\Controllers\RoomController::class, 'index'])->name('chat.index');
     Route::get('/chat/{room:slug}', [\App\Http\Controllers\RoomController::class, 'show'])->name('chat.room')->middleware(['room.access']);
-    Route::post('/chat/{room:slug}/message', [\App\Http\Controllers\RoomController::class, 'storeMessage'])->name('chat.message')->middleware(['room.ban']);
+    Route::post('/chat/{room:slug}/message', [\App\Http\Controllers\RoomController::class, 'storeMessage'])->name('chat.message');
     
     // Moderation
     Route::post('/admin/kick', [\App\Http\Controllers\ModerationController::class, 'kick'])->name('admin.kick');
     Route::post('/admin/mute/{user}', [\App\Http\Controllers\ModerationController::class, 'mute'])->name('admin.mute');
     Route::post('/admin/unmute/{user}', [\App\Http\Controllers\ModerationController::class, 'unmute'])->name('admin.unmute');
     Route::post('/admin/ban/{user}', [\App\Http\Controllers\ModerationController::class, 'ban'])->name('admin.ban');
+    Route::post('/admin/unban/{user}', [\App\Http\Controllers\ModerationController::class, 'unban'])->name('admin.unban');
 
     // Social
     Route::get('/api/users/{user}/hover-card', [\App\Http\Controllers\UserController::class, 'hoverCard'])->name('users.hover-card');

@@ -22,7 +22,12 @@ const availableActions = computed(() => {
     if (myPermissions.value.includes('mute_temp') || myPermissions.value.includes('mute_perm')) actions.push('mute');
     if (myPermissions.value.includes('unmute_user') && props.user.is_muted) actions.push('unmute');
     if (myPermissions.value.includes('kick_user')) actions.push('kick');
-    if (myPermissions.value.includes('ban_room_access')) actions.push('ban');
+    // Ban action: show if ban access AND NOT already banned (unless we support extending ban?)
+    // Actually, usually if banned, we show Unban.
+    const isBanned = props.user.is_banned; // This should come from hover card context
+    if (myPermissions.value.includes('ban_room_access') && !isBanned) actions.push('ban');
+    if ((myPermissions.value.includes('unban_user') || myPermissions.value.includes('ban_room_access')) && isBanned) actions.push('unban');
+    
     return actions;
 });
 

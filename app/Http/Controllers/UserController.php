@@ -61,6 +61,7 @@ class UserController extends Controller
             'is_self' => $isSelf,
             'friendship_status' => $friendshipStatus,
             'is_muted' => $isMuted,
+            'is_banned' => $moderationService->isBanned($user, $room),
         ]);
     }
 }

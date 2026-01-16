@@ -21,12 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-            \App\Http\Middleware\CheckIpBan::class,
+            \App\Http\Middleware\CheckBan::class,
         ]);
 
         $middleware->alias([
             'room.access' => \App\Http\Middleware\RoomAccessMiddleware::class,
-            'room.ban' => \App\Http\Middleware\CheckRoomBan::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

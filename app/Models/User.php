@@ -173,12 +173,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function getIsBannedAttribute(): bool
     {
-        return $this->bans()->active()->exists();
+        return $this->bans()->active()->whereNull('room_id')->exists();
     }
 
     public function getBanDataAttribute(): ?array
     {
-        $ban = $this->bans()->active()->latest()->first();
+        $ban = $this->bans()->active()->whereNull('room_id')->latest()->first();
         if (!$ban) return null;
 
         return [

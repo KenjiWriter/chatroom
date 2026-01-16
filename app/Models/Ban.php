@@ -16,6 +16,7 @@ class Ban extends Model
     protected $fillable = [
         'user_id',
         'moderator_id',
+        'room_id',
         'ip_address',
         'expires_at',
         'reason',
@@ -33,6 +34,11 @@ class Ban extends Model
     public function moderator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'moderator_id');
+    }
+
+    public function room(): BelongsTo
+    {
+        return $this->belongsTo(Room::class);
     }
 
     public function scopeActive(Builder $query): void

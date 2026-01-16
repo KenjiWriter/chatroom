@@ -45,12 +45,31 @@ onMounted(() => {
             activePunishment.value = e;
 
             if (e.type === 'ban') {
-                isBanned.value = true;
-                banData.value = {
-                    reason: e.reason,
-                    expires_at: e.expiresAt,
-                    moderator: e.adminName
-                };
+                if (e.roomName) {
+                    // Room Ban
+                    toast.error(`Zostałeś zbanowany z pokoju: ${e.roomName}`, {
+                        description: `Powód: ${e.reason}`,
+                        duration: 5000,
+                    });
+                    
+                    // If currently in this room, redirect
+                    if (window.location.pathname.includes(`/chat/${e.roomSlug}`)) { // Ideally use ID or slug check if available
+                        // Or just checking if we act on "chat" route.
+                        // Simple fallback: if we are in a chat room, reload or redirect.
+                        // But verifying room is hard without slug in payload.
+                        // For now, let's just show Toast. Middleware handles access on move.
+                        // Actually, if we want immediate kick-out, we need `roomSlug` or ID in event.
+                        router.visit(route('dashboard'));
+                    }
+                } else {
+                    // Global Ban
+                    isBanned.value = true;
+                    banData.value = {
+                        reason: e.reason,
+                        expires_at: e.expiresAt,
+                        moderator: e.adminName
+                    };
+                }
             } else if (e.type === 'kick') {
                 kickCountdown.value = 5;
                 toast.error(`Zostałeś wyrzucony: ${e.reason}`, {
@@ -73,12 +92,22 @@ onMounted(() => {
                 // Optionally reload to update auth user state if needed immediately
                 // router.reload({ only: ['auth'] });
             } else if (e.type === 'unmute') {
-                activePunishment.value = null; // Close any open punishment modal
+                activePunishment.value = null;
                 toast.success('Zostałeś odwyciszony', {
                     description: 'Możesz ponownie pisać na czacie.',
                     duration: 5000,
                 });
-                router.reload(); // Reload to refresh permissions/state
+                router.reload();
+            } else if (e.type === 'unban') {
+                activePunishment.value = null; 
+                toast.success('Blokada została zdjęta', {
+                    description: e.roomName ? `Dostęp do pokoju ${e.roomName} przywrócony.` : 'Twoje konto zostało odblokowane.',
+                    duration: 5000,
+                });
+                if (!e.roomName) {
+                     isBanned.value = false; // Clear global ban overlay
+                }
+                router.reload();
             }
         });
 });

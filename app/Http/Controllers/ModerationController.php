@@ -69,17 +69,38 @@ class ModerationController extends Controller
         $request->validate([
             'reason' => 'required|string|max:255',
             'duration' => 'nullable|integer|min:1',
+            'room_id' => 'nullable|exists:rooms,id',
         ]);
+
+        $room = null;
+        if ($request->input('room_id')) {
+            $room = Room::findOrFail($request->input('room_id'));
+        }
 
         $this->moderationService->ban(
             auth()->user(), 
             $user, 
             $request->input('duration') ? (int)$request->input('duration') : null, 
-            $request->input('reason')
+            $request->input('reason'),
+            $room
         );
 
         return back()->with('success', 'Użytkownik został zbanowany.');
     }
-    
-    // Ban implementation similar...
+
+    public function unban(Request $request, User $user)
+    {
+        if (!auth()->user()->can('unban_user') && !auth()->user()->can('ban_room_access')) {
+             abort(403, "No permission to unban.");
+        }
+
+        $room = null;
+        if ($request->input('room_id')) {
+             $room = Room::findOrFail($request->input('room_id'));
+        }
+
+        $this->moderationService->unban(auth()->user(), $user, $room);
+
+        return back()->with('success', 'Użytkownik został odbanowany.');
+    }
 }

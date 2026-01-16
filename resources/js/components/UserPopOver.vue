@@ -321,6 +321,7 @@ const bannerStyle = computed(() => {
             @mute="(d) => handleModeration('mute', d)"
             @ban="(d) => handleModeration('ban', d)"
             @unmute="(d) => handleModeration('unmute', d)"
+            @unban="(d: any) => handleModeration('unban', d)"
         />
     </span>
 </template>
