@@ -7,7 +7,7 @@ import { createApp, h } from 'vue';
 
 import { initializeTheme } from './composables/useAppearance';
 
-import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+import { route, ZiggyVue } from 'ziggy-js';
 import i18n from './plugins/i18n';
 import { configureEcho } from '@laravel/echo-vue';
 
@@ -25,9 +25,14 @@ createInertiaApp({
             import.meta.glob<DefineComponent>('./pages/**/*.vue'),
         ),
     setup({ el, App, props, plugin }) {
+        const ziggyConfig = (props.initialPage.props as any).ziggy;
+        // @ts-ignore
+        window.Ziggy = ziggyConfig;
+
         createApp({ render: () => h(App, props) })
             .use(plugin)
-            .use(ZiggyVue)
+            .use(ZiggyVue, ziggyConfig)
+            .mixin({ methods: { route } })
             .use(i18n as any)
             .mount(el);
     },
