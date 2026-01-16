@@ -33,11 +33,17 @@ class DashboardController extends Controller
         ];
 
         // Active Rooms
-        $rooms = Room::where('is_active', true)
+        $roomsQuery = Room::where('is_active', true)
             ->with('requiredRank')
             ->orderBy('min_level')
-            ->orderBy('name')
-            ->get();
+            ->orderBy('name');
+
+        // If user is not verified, they can ONLY see 'guest-room'
+        if (! $user->hasVerifiedEmail()) {
+            $roomsQuery->where('slug', 'guest-room');
+        }
+
+        $rooms = $roomsQuery->get();
 
         // Social Data
         $friends = $friendshipService->getFriends($user)->map(function($f) {

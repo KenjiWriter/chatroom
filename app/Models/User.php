@@ -127,6 +127,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return [
             'name' => $this->rank->name,
+            'priority' => $this->rank->priority,
             'prefix' => $this->rank->prefix,
             'color_prefix' => $this->rank->color_prefix,
             'color_name' => $this->rank->color_name,
