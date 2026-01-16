@@ -14,6 +14,7 @@
 
 - **Backend Protocol**: Laravel 13 (PHP 8.4+) utilizing robust Service Pattern architecture.
 - **Frontend Engine**: Vue 3 (Composition API) via Inertia.js for a seamless SPA experience.
+    - *Routing*: Dynamic **Ziggy** integration via Inertia Shared Data (no CLI generation required).
 - **Real-Time Layer**: **Laravel Reverb** (WebSocket server) + **Laravel Echo** for instant messaging, presence tracking, and events.
 - **Styling**: Tailwind CSS & ShadCN UI for modern, accessible components.
 - **Database**: PostgreSQL/MySQL optimized for chat indexing and JSON-based configuration.
@@ -93,6 +94,10 @@ This project adheres to **SOLID principles** and Clean Code practices to ensure 
    ```bash
    php artisan migrate --seed
    ```
+   *Note: Seeing is critical to generate default Ranks and Permissions.*
+
+5. **Routing Configuration**
+   *Note: `php artisan ziggy:generate` is **NOT** required. Routes are shared dynamically via Inertia.*
 
 5. **Start Real-Time Server**
    ```bash
@@ -103,8 +108,13 @@ This project adheres to **SOLID principles** and Clean Code practices to ensure 
    ```bash
    npm run dev
    # In a separate terminal
-   php artisan serve
+    php artisan serve
    ```
+
+## ❓ Troubleshooting
+
+- **Routes not working?**
+  Checks that `app/Http/Middleware/HandleInertiaRequests.php` correctly passes the `'ziggy'` object in the `share()` method. This is essential for the valid frontend routing without manual generation.
 
 ---
 
