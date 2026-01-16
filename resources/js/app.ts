@@ -9,6 +9,11 @@ import { initializeTheme } from './composables/useAppearance';
 
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import i18n from './plugins/i18n';
+import { configureEcho } from '@laravel/echo-vue';
+
+configureEcho({
+    broadcaster: 'reverb',
+});
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
