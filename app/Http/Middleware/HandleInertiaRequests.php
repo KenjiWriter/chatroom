@@ -57,6 +57,7 @@ class HandleInertiaRequests extends Middleware
                 'message' => fn () => $request->session()->get('message'), // Generic interface
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                'punishment' => fn () => $request->session()->get('punishment'),
                 'level_up' => fn () => $request->session()->get('level_up'), // Structured object
             ],
             'conversations' => function () use ($request) {

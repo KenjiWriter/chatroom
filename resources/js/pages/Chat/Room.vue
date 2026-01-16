@@ -379,6 +379,7 @@ onUnmounted(() => {
                                         :rank="msg.user.rank_data" 
                                         :name="msg.user.name"
                                         :user-id="msg.user_id"
+                                        :room-id="room.id"
                                         :show-moderation-tools="canModerate && msg.user_id !== currentUser.id"
                                         @moderate="openModModal(msg.user)"
                                         class="text-sm font-semibold"
@@ -487,7 +488,7 @@ onUnmounted(() => {
                          class="group flex items-center p-2 rounded-lg hover:bg-muted/50 transition-colors"
                     >
                          <div class="relative mr-3">
-                             <UserPopOver :user-id="user.id" :name="user.name">
+                             <UserPopOver :user-id="user.id" :name="user.name" :room-id="room.id">
                                  <Avatar class="h-9 w-9 border border-border cursor-pointer">
                                      <AvatarImage :src="resolveAsset(user.avatar_url, 'avatar', user.name) as string" />
                                      <AvatarFallback>{{ user.name.substring(0,2).toUpperCase() }}</AvatarFallback>
@@ -500,6 +501,7 @@ onUnmounted(() => {
                                  :rank="user.rank_data" 
                                  :name="user.name"
                                  :user-id="user.id"
+                                 :room-id="room.id"
                                  :show-message="false"
                                  :show-moderation-tools="canModerate && user.id !== currentUser.id"
                                  @moderate="openModModal(user)"

@@ -21,7 +21,12 @@ class ModerationController extends Controller
 
         $this->moderationService->kick(auth()->user(), $user, $room, $request->input('reason'));
 
-        return back()->with('success', 'User kicked.');
+        return redirect()->route('dashboard')->with('punishment', [
+            'type' => 'kick',
+            'admin' => auth()->user()->name,
+            'reason' => $request->input('reason'),
+            'room' => $room->name
+        ]);
     }
 
     public function mute(Request $request, User $user)
@@ -55,7 +60,13 @@ class ModerationController extends Controller
             $request->input('reason')
         );
 
-        return back()->with('success', 'User muted.');
+        return back()->with('punishment_notified', true)->with('punishment', [
+            'type' => 'mute',
+            'admin' => auth()->user()->name,
+            'reason' => $request->input('reason'),
+            'room' => $room?->name ?? 'Global',
+            'duration' => $isPermanent ? 'Permanent' : "{$duration} minutes"
+        ]);
     }
     
     public function ban(Request $request, User $user)
@@ -76,7 +87,12 @@ class ModerationController extends Controller
             $request->input('reason')
         );
 
-        return back()->with('success', 'User banned globally.');
+        return redirect()->route('dashboard')->with('punishment', [
+            'type' => 'ban',
+            'admin' => auth()->user()->name,
+            'reason' => $request->input('reason'),
+            'duration' => $request->input('duration') ? $request->input('duration') . " minutes" : 'Permanent'
+        ]);
     }
     
     // Ban implementation similar...

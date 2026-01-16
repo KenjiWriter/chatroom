@@ -9,6 +9,7 @@ const props = withDefaults(defineProps<{
     showMessage?: boolean;
     showModerationTools?: boolean;
     userId?: number;
+    roomId?: number;
 }>(), {
     rank: () => ({}),
     showMessage: true,
@@ -51,6 +52,7 @@ const formattedPrefix = computed(() => {
                 :is="userId ? UserPopOver : 'div'" 
                 :user-id="userId" 
                 :name="name"
+                :room-id="roomId"
                 class="inline-flex"
             >
                 <div class="inline-flex items-center gap-1">

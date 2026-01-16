@@ -6,6 +6,7 @@ import { route } from 'ziggy-js';
 import VerificationBanner from '@/components/VerificationBanner.vue';
 import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
 import BanOverlay from '@/components/BanOverlay.vue';
+import PunishmentModal from '@/components/PunishmentModal.vue';
 import type { BreadcrumbItemType } from '@/types';
 
 interface Props {
@@ -82,5 +83,6 @@ onMounted(() => {
         <AppSidebarLayout :breadcrumbs="breadcrumbs" class="flex-1">
             <slot />
         </AppSidebarLayout>
+        <PunishmentModal />
     </div>
 </template>
