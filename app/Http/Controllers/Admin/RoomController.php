@@ -7,16 +7,21 @@ use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-class RoomController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class RoomController extends Controller implements HasMiddleware
 {
-    public function __construct()
+    public static function middleware(): array
     {
-        $this->middleware(function ($request, $next) {
-            if (! auth()->user()->hasPermission('manage_rooms')) {
-                abort(403);
-            }
-            return $next($request);
-        });
+        return [
+            new Middleware(function ($request, $next) {
+                if (! auth()->user()->hasPermission('manage_rooms')) {
+                    abort(403);
+                }
+                return $next($request);
+            }),
+        ];
     }
 
     public function store(Request $request)

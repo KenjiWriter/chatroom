@@ -9,16 +9,21 @@ use App\Models\Permission;
 use App\Models\Rank;
 use Inertia\Inertia;
 
-class RankController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class RankController extends Controller implements HasMiddleware
 {
-    public function __construct()
+    public static function middleware(): array
     {
-        $this->middleware(function ($request, $next) {
-            if (! auth()->user()->hasPermission('manage_ranks')) {
-                abort(403);
-            }
-            return $next($request);
-        });
+        return [
+            new Middleware(function ($request, $next) {
+                if (! auth()->user()->hasPermission('manage_ranks')) {
+                    abort(403);
+                }
+                return $next($request);
+            }),
+        ];
     }
 
     /**
@@ -52,7 +57,7 @@ class RankController extends Controller
             $rank->permissions()->sync($request->input('permissions'));
         }
 
-        return redirect()->route('ranks.index')->with('success', 'Rank created successfully.');
+        return redirect()->route('admin.settings')->with('success', 'Rank created successfully.');
     }
 
     /**
@@ -77,7 +82,7 @@ class RankController extends Controller
             $rank->permissions()->sync($request->input('permissions'));
         }
 
-        return redirect()->route('ranks.index')->with('success', 'Rank updated successfully.');
+        return redirect()->route('admin.settings')->with('success', 'Rank updated successfully.');
     }
 
     /**
@@ -87,6 +92,6 @@ class RankController extends Controller
     {
         $rank->delete();
 
-        return redirect()->route('ranks.index')->with('success', 'Rank deleted successfully.');
+        return redirect()->route('admin.settings')->with('success', 'Rank deleted successfully.');
     }
 }

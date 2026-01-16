@@ -8,7 +8,7 @@ class StoreRankRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->hasPermission('admin.access') || $this->user()->hasPermission('bypass.level_lock'); // Fallback or strict admin check
+        return $this->user()->hasPermission('manage_ranks');
     }
 
     public function rules(): array

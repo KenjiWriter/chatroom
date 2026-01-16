@@ -32,6 +32,7 @@ import {
     LayersIcon
 } from 'lucide-vue-next';
 import RankedUserLabel from '@/components/RankedUserLabel.vue';
+import { route } from 'ziggy-js';
 
 interface Permission {
     id: number;
@@ -120,11 +121,51 @@ const deleteRoom = (room: Room) => {
 
 // --- Rank Logic ---
 const isPermissionDialogOpen = ref(false);
+const isRankDialogOpen = ref(false);
 const editingRank = ref<Rank | null>(null);
 
 const rankForm = useForm({
     permissions: [] as number[],
 });
+
+const rankCreationForm = useForm({
+    name: '',
+    prefix: '',
+    priority: 0,
+    color_name: '#ffffff',
+    color_prefix: '#ffffff',
+    color_text: '#ffffff',
+    effects: {
+        glow: false,
+        rainbow: false,
+        bold: false,
+        italic: false,
+    },
+});
+
+const openRankDialog = (rank: Rank | null = null) => {
+    editingRank.value = rank;
+    if (rank) {
+        // We might want to use this for editing rank attributes too later.
+        // For now, it's just for creation as per request.
+        rankCreationForm.name = rank.name;
+        rankCreationForm.prefix = rank.prefix || '';
+        rankCreationForm.priority = rank.priority;
+        rankCreationForm.color_name = rank.color_name;
+        // ... (can expand for full edit)
+    } else {
+        rankCreationForm.reset();
+    }
+    isRankDialogOpen.value = true;
+};
+
+const submitRank = () => {
+    rankCreationForm.post(route('ranks.store'), {
+        onSuccess: () => {
+            isRankDialogOpen.value = false;
+        }
+    });
+};
 
 const openPermissionDialog = (rank: Rank) => {
     editingRank.value = rank;
@@ -234,6 +275,10 @@ const canManageRanks = computed(() => props.auth.user.permissions.includes('mana
                 <TabsContent value="ranks" class="space-y-6">
                     <div class="flex justify-between items-center">
                         <h2 class="text-2xl font-semibold">User Ranks</h2>
+                        <Button @click="openRankDialog()" class="gap-2">
+                            <PlusIcon class="w-4 h-4" />
+                            Add Rank
+                        </Button>
                     </div>
 
                     <div class="rounded-md border bg-card">
@@ -363,6 +408,81 @@ const canManageRanks = computed(() => props.auth.user.permissions.includes('mana
                     <Button variant="outline" @click="isPermissionDialogOpen = false">Cancel</Button>
                     <Button @click="submitPermissions" :loading="rankForm.processing">
                         Update Permissions
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Rank Creation Dialog -->
+        <Dialog v-model:open="isRankDialogOpen">
+            <DialogContent class="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Create New Rank</DialogTitle>
+                    <DialogDescription>
+                        Define rank details and visual style.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <form @submit.prevent="submitRank" class="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+                    <div class="space-y-2">
+                        <Label for="rank_name">Rank Name</Label>
+                        <Input id="rank_name" v-model="rankCreationForm.name" placeholder="e.g. VIP+" required />
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="rank_prefix">Prefix</Label>
+                        <Input id="rank_prefix" v-model="rankCreationForm.prefix" placeholder="e.g. VIP+" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="rank_priority">Priority (Higher = more powerful)</Label>
+                        <Input id="rank_priority" type="number" v-model="rankCreationForm.priority" min="0" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <Label for="color_name">Name Color</Label>
+                            <div class="flex gap-2">
+                                <Input id="color_name" type="color" v-model="rankCreationForm.color_name" class="p-1 h-10 w-12" />
+                                <Input v-model="rankCreationForm.color_name" class="flex-1" />
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <Label for="color_prefix">Prefix Color</Label>
+                            <div class="flex gap-2">
+                                <Input id="color_prefix" type="color" v-model="rankCreationForm.color_prefix" class="p-1 h-10 w-12" />
+                                <Input v-model="rankCreationForm.color_prefix" class="flex-1" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 pt-2">
+                        <Label>Text Effects</Label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="flex items-center space-x-2">
+                                <Switch :checked="rankCreationForm.effects.glow" @update:checked="rankCreationForm.effects.glow = $event" />
+                                <Label class="text-xs">Glow</Label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <Switch :checked="rankCreationForm.effects.rainbow" @update:checked="rankCreationForm.effects.rainbow = $event" />
+                                <Label class="text-xs">Rainbow</Label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <Switch :checked="rankCreationForm.effects.bold" @update:checked="rankCreationForm.effects.bold = $event" />
+                                <Label class="text-xs">Bold</Label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <Switch :checked="rankCreationForm.effects.italic" @update:checked="rankCreationForm.effects.italic = $event" />
+                                <Label class="text-xs">Italic</Label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <DialogFooter>
+                    <Button variant="outline" @click="isRankDialogOpen = false">Cancel</Button>
+                    <Button @click="submitRank" :loading="rankCreationForm.processing" class="bg-indigo-600 hover:bg-indigo-700">
+                        Create Rank
                     </Button>
                 </DialogFooter>
             </DialogContent>

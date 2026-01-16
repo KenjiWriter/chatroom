@@ -128,132 +128,134 @@ const bannerStyle = computed(() => {
 </script>
 
 <template>
-    <HoverCard :open="open" @update:open="onOpenChange">
-        <HoverCardTrigger as-child>
-            <slot />
-        </HoverCardTrigger>
-        <HoverCardContent class="w-80 p-0 overflow-hidden border-none shadow-xl bg-white dark:bg-gray-900">
-            <div v-if="loading" class="p-4 space-y-4">
-                <Skeleton class="h-20 w-full" />
-                <div class="flex items-center space-x-4">
-                    <Skeleton class="h-12 w-12 rounded-full" />
-                    <div class="space-y-2">
-                        <Skeleton class="h-4 w-[200px]" />
-                        <Skeleton class="h-4 w-[150px]" />
+    <span v-bind="$attrs">
+        <HoverCard :open="open" @update:open="onOpenChange">
+            <HoverCardTrigger as-child>
+                <slot />
+            </HoverCardTrigger>
+            <HoverCardContent class="w-80 p-0 overflow-hidden border-none shadow-xl bg-white dark:bg-gray-900">
+                <div v-if="loading" class="p-4 space-y-4">
+                    <Skeleton class="h-20 w-full" />
+                    <div class="flex items-center space-x-4">
+                        <Skeleton class="h-12 w-12 rounded-full" />
+                        <div class="space-y-2">
+                            <Skeleton class="h-4 w-[200px]" />
+                            <Skeleton class="h-4 w-[150px]" />
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div v-else-if="userData">
-                <!-- Banner -->
-                <div class="h-24 bg-cover bg-center" :style="bannerStyle"></div>
                 
-                <div class="px-4 pb-4 -mt-10">
-                    <div class="flex justify-between items-end">
-                        <Avatar class="h-20 w-20 border-4 border-white dark:border-gray-900">
-                            <AvatarImage :src="resolveAsset(userData.avatar_url, 'avatar', userData.name) as string" />
-                            <AvatarFallback>{{ userData.name.substring(0,2).toUpperCase() }}</AvatarFallback>
-                        </Avatar>
-                        
-                        <!-- Actions -->
-                         <div class="flex gap-2 mb-2">
-                            <Button v-if="userData.friendship_status === 'none' && !userData.is_self" 
-                                size="sm" variant="outline" class="h-8 gap-1"
-                                @click="sendFriendRequest"
-                            >
-                                <UserPlus class="w-4 h-4" /> Add
-                            </Button>
-                            
-                            <Button v-else-if="userData.friendship_status === 'sent_pending'"
-                                size="sm" variant="secondary" class="h-8 gap-1" disabled
-                            >
-                                <Clock class="w-4 h-4" /> Sent
-                            </Button>
-                            
-                             <Button v-else-if="userData.friendship_status === 'received_pending'"
-                                size="sm" class="h-8 gap-1 bg-green-600 hover:bg-green-700"
-                                @click="() => {} /* Need ID */"
-                            >
-                                <Check class="w-4 h-4" /> Accept
-                            </Button>
-                             
-                             <Button v-else-if="userData.friendship_status === 'accepted'"
-                                size="sm" variant="ghost" class="h-8 gap-1"
-                                @click="router.post(route('conversations.store'), { user_id: userData.id })"
-                            >
-                                <MessageSquare class="w-4 h-4" /> Message
-                            </Button>
-
-                            <!-- Moderation Actions -->
-                            <Button v-if="canModerate && !userData.is_self"
-                                size="sm" variant="outline" class="h-8 gap-1 text-destructive hover:text-destructive"
-                                @click="isModModalOpen = true"
-                            >
-                                <Ban class="w-4 h-4" /> Actions
-                            </Button>
-                         </div>
-                    </div>
+                <div v-else-if="userData">
+                    <!-- Banner -->
+                    <div class="h-24 bg-cover bg-center" :style="bannerStyle"></div>
                     
-                    <div class="mt-2">
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-lg text-gray-900 dark:text-gray-100">{{ userData.name }}</span>
-                            <!-- Rank Badge -->
-                            <span 
-                                class="text-xs px-2 py-0.5 rounded border"
-                                :style="{ 
-                                    borderColor: userData.rank_data.color_name,
-                                    color: userData.rank_data.color_name,
-                                    backgroundColor: userData.rank_data.color_name + '1A' // 10% opacity
-                                }"
-                            >
-                                {{ userData.rank_data.name }}
-                            </span>
-                             <span class="text-xs text-gray-500">Lvl {{ userData.level }}</span>
-                        </div>
-                        
-                        <div v-if="userData.bio" class="text-sm text-gray-600 dark:text-gray-300 mt-2 line-clamp-3">
-                            {{ userData.bio }}
-                        </div>
-                        
-                        <!-- Mini XP Bar -->
-                        <div v-if="userData.xp !== null" class="mt-3">
-                             <div class="flex justify-between text-[10px] text-gray-500 mb-1">
-                                <span>XP Progress</span>
-                                <span>{{ userData.xp }} / {{ userData.next_level_xp }}</span>
+                    <div class="px-4 pb-4 -mt-10">
+                        <div class="flex justify-between items-end">
+                            <Avatar class="h-20 w-20 border-4 border-white dark:border-gray-900">
+                                <AvatarImage :src="resolveAsset(userData.avatar_url, 'avatar', userData.name) as string" />
+                                <AvatarFallback>{{ userData.name.substring(0,2).toUpperCase() }}</AvatarFallback>
+                            </Avatar>
+                            
+                            <!-- Actions -->
+                             <div class="flex gap-2 mb-2">
+                                <Button v-if="userData.friendship_status === 'none' && !userData.is_self" 
+                                    size="sm" variant="outline" class="h-8 gap-1"
+                                    @click="sendFriendRequest"
+                                >
+                                    <UserPlus class="w-4 h-4" /> Add
+                                </Button>
+                                
+                                <Button v-else-if="userData.friendship_status === 'sent_pending'"
+                                    size="sm" variant="secondary" class="h-8 gap-1" disabled
+                                >
+                                    <Clock class="w-4 h-4" /> Sent
+                                </Button>
+                                
+                                 <Button v-else-if="userData.friendship_status === 'received_pending'"
+                                    size="sm" class="h-8 gap-1 bg-green-600 hover:bg-green-700"
+                                    @click="() => {} /* Need ID */"
+                                >
+                                    <Check class="w-4 h-4" /> Accept
+                                </Button>
+                                 
+                                 <Button v-else-if="userData.friendship_status === 'accepted'"
+                                    size="sm" variant="ghost" class="h-8 gap-1"
+                                    @click="router.post(route('conversations.store'), { user_id: userData.id })"
+                                >
+                                    <MessageSquare class="w-4 h-4" /> Message
+                                </Button>
+    
+                                <!-- Moderation Actions -->
+                                <Button v-if="canModerate && !userData.is_self"
+                                    size="sm" variant="outline" class="h-8 gap-1 text-destructive hover:text-destructive"
+                                    @click="isModModalOpen = true"
+                                >
+                                    <Ban class="w-4 h-4" /> Actions
+                                </Button>
                              </div>
-                             <div class="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                <div 
-                                    class="h-full bg-blue-500 transition-all duration-500"
-                                    :style="{ width: Math.min(100, (userData.xp / userData.next_level_xp) * 100) + '%' }"
-                                ></div>
-                             </div>
                         </div>
                         
-                        <div v-if="!userData.xp && !userData.bio" class="text-sm text-gray-400 italic mt-2">
-                            Profile is private.
-                        </div>
-                        
-                        <div class="text-xs text-gray-400 mt-3">
-                            Joined {{ userData.created_at }}
+                        <div class="mt-2">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-lg text-gray-900 dark:text-gray-100">{{ userData.name }}</span>
+                                <!-- Rank Badge -->
+                                <span 
+                                    class="text-xs px-2 py-0.5 rounded border"
+                                    :style="{ 
+                                        borderColor: userData.rank_data.color_name,
+                                        color: userData.rank_data.color_name,
+                                        backgroundColor: userData.rank_data.color_name + '1A' // 10% opacity
+                                    }"
+                                >
+                                    {{ userData.rank_data.name }}
+                                </span>
+                                 <span class="text-xs text-gray-500">Lvl {{ userData.level }}</span>
+                            </div>
+                            
+                            <div v-if="userData.bio" class="text-sm text-gray-600 dark:text-gray-300 mt-2 line-clamp-3">
+                                {{ userData.bio }}
+                            </div>
+                            
+                            <!-- Mini XP Bar -->
+                            <div v-if="userData.xp !== null" class="mt-3">
+                                 <div class="flex justify-between text-[10px] text-gray-500 mb-1">
+                                    <span>XP Progress</span>
+                                    <span>{{ userData.xp }} / {{ userData.next_level_xp }}</span>
+                                 </div>
+                                 <div class="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div 
+                                        class="h-full bg-blue-500 transition-all duration-500"
+                                        :style="{ width: Math.min(100, (userData.xp / userData.next_level_xp) * 100) + '%' }"
+                                    ></div>
+                                 </div>
+                            </div>
+                            
+                            <div v-if="!userData.xp && !userData.bio" class="text-sm text-gray-400 italic mt-2">
+                                Profile is private.
+                            </div>
+                            
+                            <div class="text-xs text-gray-400 mt-3">
+                                Joined {{ userData.created_at }}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div v-else class="p-4 text-center text-red-500">
-                Failed to load profile.
-            </div>
-        </HoverCardContent>
-    </HoverCard>
-
-    <ModerationModal 
-        v-if="userData"
-        :is-open="isModModalOpen" 
-        :user="userData"
-        :room-id="roomId"
-        @close="isModModalOpen = false"
-        @kick="(d) => handleModeration('kick', d)"
-        @mute="(d) => handleModeration('mute', d)"
-        @ban="(d) => handleModeration('ban', d)"
-    />
+                
+                <div v-else class="p-4 text-center text-red-500">
+                    Failed to load profile.
+                </div>
+            </HoverCardContent>
+        </HoverCard>
+    
+        <ModerationModal 
+            v-if="userData"
+            :is-open="isModModalOpen" 
+            :user="userData"
+            :room-id="roomId"
+            @close="isModModalOpen = false"
+            @kick="(d) => handleModeration('kick', d)"
+            @mute="(d) => handleModeration('mute', d)"
+            @ban="(d) => handleModeration('ban', d)"
+        />
+    </span>
 </template>
