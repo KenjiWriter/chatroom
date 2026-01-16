@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
+import VerificationBanner from '@/components/VerificationBanner.vue';
 import type { BreadcrumbItemType } from '@/types';
 
 interface Props {
@@ -12,7 +12,10 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <slot />
-    </AppLayout>
+    <div class="flex flex-col min-h-screen">
+        <VerificationBanner />
+        <AppLayout :breadcrumbs="breadcrumbs" class="flex-1">
+            <slot />
+        </AppLayout>
+    </div>
 </template>

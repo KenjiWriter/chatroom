@@ -13,13 +13,29 @@ class RoomController extends Controller
 {
     public function index()
     {
+        $query = Room::with('requiredRank')->where('is_active', true);
+
+        // If user is not verified, they can ONLY see 'guest-room'
+        if (! auth()->user()->hasVerifiedEmail()) {
+            $query->where('slug', 'guest-room');
+        }
+
         return Inertia::render('Chat/Index', [
-            'rooms' => Room::with('requiredRank')->where('is_active', true)->get(),
+            'rooms' => $query->get(),
         ]);
     }
 
     public function show(Room $room)
     {
+        // Verification Gate
+        if (! auth()->user()->hasVerifiedEmail() && $room->slug !== 'guest-room') {
+            return redirect()->route('chat.index')
+                ->with('flash', [
+                    'message' => 'You must verify your email to access this room.',
+                    'type' => 'error'
+                ]);
+        }
+
         if (! $room->checkAccess(auth()->user())) {
              return redirect()->route('chat.index')
                 ->with('flash', [
