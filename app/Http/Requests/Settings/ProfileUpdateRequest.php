@@ -19,8 +19,10 @@ class ProfileUpdateRequest extends FormRequest
     {
         return array_merge($this->profileRules($this->user()->id), [
             'bio' => ['nullable', 'string', 'max:500'],
-            'avatar_url' => ['nullable', 'string', 'url', 'max:2048'],
-            'banner_url' => ['nullable', 'string', 'url', 'max:2048'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'banner' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'],
+            'delete_avatar' => ['boolean'],
+            'delete_banner' => ['boolean'],
             'is_private' => ['boolean'],
             'preferences' => ['nullable', 'array'],
             'preferences.show_online_status' => ['boolean'],
