@@ -61,6 +61,23 @@ const footerNavItems: NavItem[] = [
         icon: BookOpen,
     },
 ];
+
+import { ref, onMounted, onUnmounted } from 'vue';
+
+const totalOnline = ref(0);
+
+onMounted(() => {
+    // @ts-ignore
+    window.Echo.join('online')
+        .here((users: any[]) => totalOnline.value = users.length)
+        .joining(() => totalOnline.value++)
+        .leaving(() => totalOnline.value = Math.max(0, totalOnline.value - 1));
+});
+
+onUnmounted(() => {
+    // @ts-ignore
+    window.Echo.leave('online');
+});
 </script>
 
 <template>
@@ -68,11 +85,21 @@ const footerNavItems: NavItem[] = [
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
-                        <Link :href="route('dashboard')">
-                            <AppLogo />
-                        </Link>
-                    </SidebarMenuButton>
+                    <div class="flex items-center justify-between px-2 mb-2">
+                        <SidebarMenuButton size="lg" as-child class="flex-1">
+                            <Link :href="route('dashboard')">
+                                <AppLogo />
+                            </Link>
+                        </SidebarMenuButton>
+                        
+                        <div v-if="totalOnline > 0" class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 ml-2 animate-in fade-in duration-500">
+                            <span class="relative flex h-1.5 w-1.5">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                            </span>
+                            <span class="text-[10px] font-black tabular-nums">{{ totalOnline }}</span>
+                        </div>
+                    </div>
                 </SidebarMenuItem>
             </SidebarMenu>
         </SidebarHeader>
