@@ -140,7 +140,7 @@ const submit = () => {
                              <div 
                                 class="relative h-32 md:h-48 w-full rounded-xl bg-muted bg-cover bg-center border border-input overflow-hidden group"
                                 :style="{ 
-                                    backgroundImage: bannerPreview ? `url(${bannerPreview})` : undefined,
+                                    backgroundImage: bannerPreview ? `url('${bannerPreview}')` : undefined,
                                     background: !bannerPreview ? `linear-gradient(to right, ${user.rank_data?.color_name || '#666'}, #1a1a1a)` : undefined 
                                 }"
                              >
