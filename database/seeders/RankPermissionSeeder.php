@@ -22,6 +22,9 @@ class RankPermissionSeeder extends Seeder
 
         // 1. Create Permissions
         $permissions = [
+            ['slug' => 'ban_user', 'name' => 'Ban User'],
+            ['slug' => 'unmute_user', 'name' => 'Unmute User'],
+            ['slug' => 'view_logs', 'name' => 'View Logs'],
             ['name' => 'Can Chat', 'slug' => 'chat.write'],
             ['name' => 'View Chat', 'slug' => 'chat.read'],
             ['name' => 'Kick Users', 'slug' => 'kick_user'],
@@ -60,6 +63,24 @@ class RankPermissionSeeder extends Seeder
             ]
         );
 
+        // Create Moderator Rank
+        $moderatorRank = Rank::updateOrCreate(
+            ['name' => 'Moderator'],
+            [
+                'prefix' => 'Mod',
+                'color_prefix' => '#007bff', // Blue
+                'color_name' => '#007bff',
+                'color_text' => '#ffffff',
+                'priority' => 50,
+                'effects' => [
+                    'glow' => false,
+                    'rainbow' => false,
+                    'bold' => true,
+                    'italic' => false,
+                ],
+            ]
+        );
+
         $userRank = Rank::updateOrCreate(
             ['name' => 'User'],
             [
@@ -86,6 +107,21 @@ class RankPermissionSeeder extends Seeder
             $permissionModels['chat.write']->id,
             $permissionModels['chat.read']->id,
         ]);
+
+        // Moderator Gets Moderation Permissions
+        $modPermissions = [
+            'chat.write', 'chat.read',
+            'kick_user', 'mute_temp', 'mute_perm', 'unmute_user', 'ban_room_access',
+            'view_logs',
+        ];
+        
+        $modPermIds = [];
+        foreach ($modPermissions as $slug) {
+            if (isset($permissionModels[$slug])) {
+                $modPermIds[] = $permissionModels[$slug]->id;
+            }
+        }
+        $moderatorRank->permissions()->sync($modPermIds);
 
         // 4. Set default rank for users without one
         User::whereNull('rank_id')->update(['rank_id' => $userRank->id]);

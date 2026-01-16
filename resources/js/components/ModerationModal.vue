@@ -11,20 +11,22 @@ const props = defineProps<{
     roomId?: number; // Context room
 }>();
 
-const emit = defineEmits(['close', 'kick', 'mute', 'ban']);
+const emit = defineEmits(['close', 'kick', 'mute', 'ban', 'unmute']);
 
 const page = usePage();
 const myPermissions = computed(() => (page.props.auth.user as any)?.permissions || []);
 
 const availableActions = computed(() => {
-    const actions = [];
+    const actions: string[] = [];
+    if (!props.user) return actions;
     if (myPermissions.value.includes('mute_temp') || myPermissions.value.includes('mute_perm')) actions.push('mute');
+    if (myPermissions.value.includes('unmute_user') && props.user.is_muted) actions.push('unmute');
     if (myPermissions.value.includes('kick_user')) actions.push('kick');
     if (myPermissions.value.includes('ban_room_access')) actions.push('ban');
     return actions;
 });
 
-const action = ref<'kick' | 'mute' | 'ban'>('mute');
+const action = ref<'kick' | 'mute' | 'ban' | 'unmute'>('mute');
 
 // Reset action if current one becomes unavailable
 watch(availableActions, (newActions) => {
@@ -43,7 +45,7 @@ const canDoPermMute = computed(() => myPermissions.value.includes('mute_perm'));
 const submit = () => {
     emit(action.value, {
         userId: props.user.id,
-        minutes: (isPermanent.value && canDoPermMute.value) ? null : duration.value,
+        duration: (isPermanent.value && canDoPermMute.value) ? null : duration.value,
         reason: reason.value,
         roomId: props.roomId
     });

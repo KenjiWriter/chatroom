@@ -22,6 +22,7 @@ const user = computed(() => page.props.auth.user as any);
 
 const isBanned = ref(user.value?.is_banned || false);
 const banData = ref(user.value?.ban_data || null);
+const activePunishment = ref<any>(null);
 const kickCountdown = ref(0);
 
 const playNotificationSound = () => {
@@ -40,17 +41,20 @@ onMounted(() => {
         .listen('UserPunished', (e: any) => {
             playNotificationSound();
             
+            // Set active punishment to show modal
+            activePunishment.value = e;
+
             if (e.type === 'ban') {
                 isBanned.value = true;
                 banData.value = {
                     reason: e.reason,
-                    expires_at: e.duration === 'permanently' ? null : e.expiresAt, // Need to ensure event sends expiresAt if possible, or duration string
-                    moderator: 'Administrative Action'
+                    expires_at: e.expiresAt,
+                    moderator: e.adminName
                 };
             } else if (e.type === 'kick') {
                 kickCountdown.value = 5;
-                toast.error(`You have been kicked: ${e.reason}`, {
-                    description: "Redirecting to dashboard in 5 seconds...",
+                toast.error(`Zostałeś wyrzucony: ${e.reason}`, {
+                    description: "Przekierowanie do panelu głównego za 5 sekund...",
                     duration: 5000,
                 });
                 
@@ -58,18 +62,23 @@ onMounted(() => {
                     kickCountdown.value--;
                     if (kickCountdown.value <= 0) {
                         clearInterval(timer);
+                        activePunishment.value = null; // Close modal before redirect
                         router.visit(route('dashboard'));
                     }
                 }, 1000);
             } else if (e.type === 'mute') {
-                toast.warning(`You have been muted: ${e.reason}`, {
-                    description: `Duration: ${e.duration || 'Unknown'}`,
+                toast.warning(`Zostałeś wyciszony: ${e.reason}`, {
+                    description: `Czas trwania: ${e.duration || 'Nieznany'}`,
                 });
-                // State is tracked primarily via Inertia shared props for persistence, 
-                // but event triggers immediate feedback.
-                // Re-fetch or update shared data? 
-                // Inertia automatically updates page.props.auth.user if we use standard partial reload or just trust the next visit.
-                // For real-time sync, we might need a global store or just trust the next backend validation.
+                // Optionally reload to update auth user state if needed immediately
+                // router.reload({ only: ['auth'] });
+            } else if (e.type === 'unmute') {
+                activePunishment.value = null; // Close any open punishment modal
+                toast.success('Zostałeś odwyciszony', {
+                    description: 'Możesz ponownie pisać na czacie.',
+                    duration: 5000,
+                });
+                router.reload(); // Reload to refresh permissions/state
             }
         });
 });
@@ -83,6 +92,10 @@ onMounted(() => {
         <AppSidebarLayout :breadcrumbs="breadcrumbs" class="flex-1">
             <slot />
         </AppSidebarLayout>
-        <PunishmentModal />
+        <PunishmentModal 
+            :punishment="activePunishment"
+            :is-open="!!activePunishment"
+            @close="activePunishment = null"
+        />
     </div>
 </template>

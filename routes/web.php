@@ -16,8 +16,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/chat/{room:slug}/message', [\App\Http\Controllers\RoomController::class, 'storeMessage'])->name('chat.message')->middleware(['room.ban']);
     
     // Moderation
-    Route::post('/admin/kick/{room}/{user}', [\App\Http\Controllers\ModerationController::class, 'kick'])->name('admin.kick');
+    Route::post('/admin/kick', [\App\Http\Controllers\ModerationController::class, 'kick'])->name('admin.kick');
     Route::post('/admin/mute/{user}', [\App\Http\Controllers\ModerationController::class, 'mute'])->name('admin.mute');
+    Route::post('/admin/unmute/{user}', [\App\Http\Controllers\ModerationController::class, 'unmute'])->name('admin.unmute');
     Route::post('/admin/ban/{user}', [\App\Http\Controllers\ModerationController::class, 'ban'])->name('admin.ban');
 
     // Social

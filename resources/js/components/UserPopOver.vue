@@ -71,7 +71,9 @@ const updateRank = async (rankId: string) => {
 const handleModeration = (type: string, data: any) => {
     const url = type === 'kick' 
         ? route('admin.kick', { room: data.roomId, user: data.userId })
-        : (type === 'ban' ? route('admin.ban', { user: data.userId }) : route('admin.mute', { user: data.userId }));
+        : (type === 'ban' ? route('admin.ban', { user: data.userId }) 
+        : (type === 'unmute' ? route('admin.unmute', { user: data.userId }) 
+        : route('admin.mute', { user: data.userId })));
         
     router.post(url, data, {
         onSuccess: () => {
@@ -95,7 +97,7 @@ const fetchUserData = async () => {
     
     loading.value = true;
     try {
-        const response = await axios.get(route('users.hover-card', props.userId));
+        const response = await axios.get(route('users.hover-card', { user: props.userId, room_id: props.roomId }));
         userData.value = response.data;
         if (canManageRanks.value) {
             fetchAssignableRanks();
@@ -239,6 +241,7 @@ const bannerStyle = computed(() => {
                                 >
                                     <Ban class="w-4 h-4" /> Actions
                                 </Button>
+
                              </div>
                         </div>
                         
@@ -317,6 +320,7 @@ const bannerStyle = computed(() => {
             @kick="(d) => handleModeration('kick', d)"
             @mute="(d) => handleModeration('mute', d)"
             @ban="(d) => handleModeration('ban', d)"
+            @unmute="(d) => handleModeration('unmute', d)"
         />
     </span>
 </template>

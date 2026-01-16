@@ -7,9 +7,11 @@ use App\Services\FriendshipService;
 use App\Services\LevelService;
 use Illuminate\Http\Request;
 
+use App\Services\ModerationService;
+
 class UserController extends Controller
 {
-    public function hoverCard(User $user, Request $request, LevelService $levelService, FriendshipService $friendshipService)
+    public function hoverCard(User $user, Request $request, LevelService $levelService, FriendshipService $friendshipService, ModerationService $moderationService)
     {
         $currentUser = $request->user();
         
@@ -37,6 +39,11 @@ class UserController extends Controller
             }
         }
 
+        // Check Mute Status
+        $roomId = $request->query('room_id');
+        $room = $roomId ? \App\Models\Room::find($roomId) : null;
+        $isMuted = $moderationService->isMuted($user, $room);
+
         return response()->json([
             'id' => $user->id,
             'name' => $user->name,
@@ -53,6 +60,7 @@ class UserController extends Controller
             // Context
             'is_self' => $isSelf,
             'friendship_status' => $friendshipStatus,
+            'is_muted' => $isMuted,
         ]);
     }
 }

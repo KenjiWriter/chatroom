@@ -21,7 +21,9 @@ class UserPunished implements ShouldBroadcastNow
         public string $type, // 'kick', 'mute', 'ban'
         public string $reason,
         public ?string $duration = null,
-        public ?string $expiresAt = null
+        public ?string $expiresAt = null,
+        public ?string $adminName = null,
+        public ?string $roomName = null
     ) {}
 
     /**

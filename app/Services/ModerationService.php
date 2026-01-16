@@ -35,7 +35,15 @@ class ModerationService
         $this->ensureCanModerate($moderator, $target);
 
         // Broadcast Punished Event
-        broadcast(new UserPunished($target->id, 'kick', $reason));
+        broadcast(new UserPunished(
+            $target->id, 
+            'kick', 
+            $reason, 
+            null, 
+            null, 
+            $moderator->name, 
+            $room->name
+        ));
 
         // System Message
         $this->createSystemMessage($room, "{$target->name} was kicked by {$moderator->name}. Reason: {$reason}");
@@ -45,6 +53,8 @@ class ModerationService
     {
         $this->ensureCanModerate($moderator, $target);
 
+        // Explicitly check for permanent mute logic from controller
+        // If minutes is provided, use it. If null, it's permanent.
         $expiresAt = $minutes ? now()->addMinutes($minutes) : null;
 
         Mute::create([
@@ -61,7 +71,9 @@ class ModerationService
             'mute', 
             $reason,
             $minutes ? "{$minutes} minutes" : "permanently",
-            $expiresAt?->toIso8601String()
+            $expiresAt?->toIso8601String(),
+            $moderator->name,
+            $room?->name
         ));
 
         // System Message
@@ -71,10 +83,25 @@ class ModerationService
 
         if ($room) {
              $this->createSystemMessage($room, $msg);
-        } else {
-            // If global, maybe notify all active rooms? Or just don't span system messages?
-            // For now, let's not spam all rooms.
         }
+    }
+
+    public function unmute(User $moderator, User $target): void
+    {
+        $this->ensureCanModerate($moderator, $target);
+
+        // Remove active mutes
+        Mute::active()->where('user_id', $target->id)->update(['expires_at' => now()]);
+
+        // Broadcast Unmute
+        broadcast(new UserPunished(
+            $target->id,
+            'unmute',
+            'Unmuted by moderator',
+            null,
+            null,
+            $moderator->name
+        ));
     }
 
     public function ban(User $moderator, User $target, ?int $minutes, string $reason): void
@@ -97,7 +124,8 @@ class ModerationService
             'ban', 
             $reason,
             $minutes ? "{$minutes} minutes" : "permanently",
-            $expiresAt?->toIso8601String()
+            $expiresAt?->toIso8601String(),
+            $moderator->name
         ));
     }
 
