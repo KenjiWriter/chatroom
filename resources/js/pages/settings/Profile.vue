@@ -147,10 +147,13 @@ const displayBanner = computed(() => {
                         <div class="space-y-2">
                              <Label>Profile Banner</Label>
                              <div 
-                                class="relative h-32 md:h-48 w-full rounded-xl bg-muted bg-cover bg-center border border-input overflow-hidden group"
+                                class="relative h-32 md:h-48 w-full rounded-xl bg-muted overflow-hidden group border border-input"
                                 :style="{ 
                                     backgroundImage: displayBanner ? `url('${displayBanner}')` : undefined,
-                                    background: !displayBanner ? `linear-gradient(to right, ${user.rank_data?.color_name || '#666'}, #1a1a1a)` : undefined 
+                                    background: !displayBanner ? `linear-gradient(to right, ${user.rank_data?.color_name || '#666'}, #1a1a1a)` : undefined,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    backgroundRepeat: 'no-repeat'
                                 }"
                              >
                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
