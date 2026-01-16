@@ -60,9 +60,9 @@ class RankPermissionSeeder extends Seeder
             ['name' => 'User'],
             [
                 'prefix' => null,
-                'color_prefix' => '#cccccc',
-                'color_name' => '#ffffff',
-                'color_text' => '#dddddd',
+                'color_prefix' => '#9ca3af', // Gray 400
+                'color_name' => '#4b5563',   // Gray 600
+                'color_text' => '#374151',   // Gray 700
                 'priority' => 1,
                 'effects' => [
                     'glow' => false,
