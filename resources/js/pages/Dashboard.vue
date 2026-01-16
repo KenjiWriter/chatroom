@@ -169,7 +169,7 @@ console.log('Dashboard Banner URL:', bannerSrc.value);
                              <div class="mt-4 max-w-xl">
                                 <div class="flex justify-between text-xs text-muted-foreground mb-1 uppercase tracking-wider font-semibold">
                                     <span>XP Progress</span>
-                                    <span>{{ progress.needed_for_next }} XP to Lvl {{ Math.floor(progress.current_xp / 100) + 1 }}</span>
+                                    <span>{{ progress.relative_xp }} / {{ progress.needed_for_next }} XP to Lvl {{ progress.next_level }}</span>
                                 </div>
                                 <div class="h-2.5 w-full bg-secondary/50 rounded-full overflow-hidden border border-border/50">
                                     <div 
