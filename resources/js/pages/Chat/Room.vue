@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import axios from 'axios';
 import { toast } from 'vue-sonner';
+import { route } from 'ziggy-js';
 
 const props = defineProps<{
     room: any;
@@ -272,7 +273,6 @@ onUnmounted(() => {
                             <RankedUserLabel 
                                 :rank="msg.user.rank_data" 
                                 :name="msg.user.name"
-                                :message="msg.content" 
                                 :show-moderation-tools="canModerate && msg.user_id !== currentUser.id"
                                 @moderate="openModModal(msg.user)"
                                 class="mb-1"
