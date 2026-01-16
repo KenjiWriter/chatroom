@@ -116,6 +116,15 @@ const submit = () => {
         }
     });
 };
+const getBannerUrl = (url: string | null) => {
+    if (!url) return null;
+    if (url.startsWith('data:') || url.startsWith('http') || url.startsWith('/storage')) return url;
+    return `/storage/${url}`;
+};
+
+const displayBanner = computed(() => {
+    return getBannerUrl(bannerPreview.value);
+});
 </script>
 
 <template>
@@ -140,8 +149,8 @@ const submit = () => {
                              <div 
                                 class="relative h-32 md:h-48 w-full rounded-xl bg-muted bg-cover bg-center border border-input overflow-hidden group"
                                 :style="{ 
-                                    backgroundImage: bannerPreview ? `url('${bannerPreview}')` : undefined,
-                                    background: !bannerPreview ? `linear-gradient(to right, ${user.rank_data?.color_name || '#666'}, #1a1a1a)` : undefined 
+                                    backgroundImage: displayBanner ? `url('${displayBanner}')` : undefined,
+                                    background: !displayBanner ? `linear-gradient(to right, ${user.rank_data?.color_name || '#666'}, #1a1a1a)` : undefined 
                                 }"
                              >
                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
