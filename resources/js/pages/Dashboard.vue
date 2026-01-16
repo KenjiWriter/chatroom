@@ -85,8 +85,16 @@ const getBannerUrl = (url: string | null) => {
     return `/storage/${url}`;
 };
 
-const bannerUrl = computed(() => getBannerUrl(props.auth.user.banner_url));
-console.log('Dashboard Banner URL:', bannerUrl.value);
+const bannerSrc = ref(getBannerUrl(props.auth.user.banner_url));
+
+// Watch for prop changes to update the banner (e.g. after profile edit)
+// but allow local override to null if error occurs
+import { watch } from 'vue';
+watch(() => props.auth.user.banner_url, (newUrl) => {
+    bannerSrc.value = getBannerUrl(newUrl);
+});
+
+console.log('Dashboard Banner URL:', bannerSrc.value);
 </script>
 
 <template>
@@ -99,10 +107,11 @@ console.log('Dashboard Banner URL:', bannerUrl.value);
                 <!-- Banner -->
                 <div class="h-[250px] w-full rounded-t-xl overflow-hidden relative bg-muted">
                     <img 
-                        v-if="bannerUrl"
-                        :src="bannerUrl"
+                        v-if="bannerSrc"
+                        :src="bannerSrc"
                         alt="Profile Banner"
                         class="w-full h-full object-cover"
+                        @error="bannerSrc = null"
                     />
                     <div 
                         v-else
