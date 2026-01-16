@@ -17,6 +17,14 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        return $this->profileRules($this->user()->id);
+        return array_merge($this->profileRules($this->user()->id), [
+            'bio' => ['nullable', 'string', 'max:500'],
+            'avatar_url' => ['nullable', 'string', 'url', 'max:2048'],
+            'banner_url' => ['nullable', 'string', 'url', 'max:2048'],
+            'is_private' => ['boolean'],
+            'preferences' => ['nullable', 'array'],
+            'preferences.show_online_status' => ['boolean'],
+            'preferences.show_current_room' => ['boolean'],
+        ]);
     }
 }
