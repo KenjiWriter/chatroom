@@ -146,22 +146,23 @@ const displayBanner = computed(() => {
                         <!-- Banner -->
                         <div class="space-y-2">
                              <Label>Profile Banner</Label>
-                             <div 
-                                class="relative h-32 md:h-48 w-full rounded-xl bg-muted overflow-hidden group border border-input"
-                                :style="{ 
-                                    backgroundImage: displayBanner ? `url(${displayBanner})` : undefined,
-                                    background: !displayBanner ? `linear-gradient(to right, ${user.rank_data?.color_name || '#666'}, #1a1a1a)` : undefined,
-                                    backgroundColor: '#333',
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    backgroundRepeat: 'no-repeat'
-                                }"
-                             >
+                             <div class="relative h-32 md:h-48 w-full rounded-xl bg-muted overflow-hidden group border border-input">
+                                <img 
+                                    v-if="displayBanner"
+                                    :src="displayBanner"
+                                    class="w-full h-full object-cover"
+                                />
+                                <div 
+                                    v-else
+                                    class="w-full h-full"
+                                    :style="{ background: `linear-gradient(to right, ${user.rank_data?.color_name || '#666'}, #1a1a1a)` }"
+                                ></div>
+
                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <Button type="button" variant="secondary" size="sm" @click="triggerBannerUpload">
                                         <Upload class="w-4 h-4 mr-2" /> Change Banner
                                     </Button>
-                                    <Button v-if="bannerPreview" type="button" variant="destructive" size="sm" @click="deleteBanner">
+                                    <Button v-if="displayBanner" type="button" variant="destructive" size="sm" @click="deleteBanner">
                                         <Trash2 class="w-4 h-4" />
                                     </Button>
                                 </div>
