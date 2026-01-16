@@ -119,6 +119,7 @@ Express yourself with rich media.
 | Command | Description |
 | :--- | :--- |
 | `php artisan user:verify {email}` | Manually verify a user's email and upgrade their rank to User. |
+| `php artisan user:set-admin {email}` | Directly assign the Administrator rank to a specific user. |
 | `php artisan db:seed --class=RankPermissionSeeder` | Refresh the rank and permission hierarchy. |
 
 ---
