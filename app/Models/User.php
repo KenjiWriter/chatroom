@@ -25,6 +25,11 @@ class User extends Authenticatable
         'rank_id',
         'xp',
         'level',
+        'avatar_url',
+        'banner_url',
+        'bio',
+        'is_private',
+        'preferences',
     ];
 
     /**
@@ -59,7 +64,39 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
             'level' => 'integer',
             'xp' => 'integer',
+            'is_private' => 'boolean',
+            'preferences' => 'array',
         ];
+    }
+
+    // Relationships
+
+    public function visits()
+    {
+        return $this->hasMany(RoomVisit::class);
+    }
+
+    public function sentFriendships()
+    {
+        return $this->hasMany(Friendship::class, 'user_id');
+    }
+
+    public function receivedFriendships()
+    {
+        return $this->hasMany(Friendship::class, 'friend_id');
+    }
+
+    public function friends()
+    {
+        // Union of sent and received accepted friendships... complex in Eloquent direct relation.
+        // Usually simpler to just use a service or accessor.
+        // However, standard many-to-many approach if we treat pivot table differently?
+        // Let's stick to explicit relationships for now.
+        return $this->belongsToMany(User::class, 'friendships', 'user_id', 'friend_id')
+            ->wherePivot('status', 'accepted')
+            ->withTimestamps();
+            // Note: This only gets friends where THIS user is the sender. 
+            // For bidirectional, we need a custom accessor or merge collection.
     }
 
     /**

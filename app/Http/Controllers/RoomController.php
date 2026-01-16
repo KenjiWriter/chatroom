@@ -28,6 +28,12 @@ class RoomController extends Controller
                 ]);
         }
         
+        // Log visit
+        \App\Models\RoomVisit::updateOrCreate(
+            ['user_id' => auth()->id(), 'room_id' => $room->id],
+            ['last_visited_at' => now()]
+        );
+        
         // Eager load rank for the message author to use RankedUserLabel
         $messages = $room->messages()
             ->with(['user.rank'])
