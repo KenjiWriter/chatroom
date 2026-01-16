@@ -347,6 +347,7 @@ onUnmounted(() => {
                                     v-if="msg.user_id !== currentUser.id" 
                                     :user-id="msg.user_id"
                                     :name="msg.user.name"
+                                    :room-id="room.id"
                                 >
                                     <Avatar class="h-10 w-10 border border-border cursor-pointer hover:ring-2 hover:ring-ring transition-all">
                                         <AvatarImage :src="resolveAsset(msg.user.avatar_url, 'avatar', msg.user.name) as string" />

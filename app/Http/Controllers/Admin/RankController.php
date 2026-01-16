@@ -13,11 +13,12 @@ class RankController extends Controller
 {
     public function __construct()
     {
-        // Simple security check. In production, use Policies/Gates.
-        // Assuming 'admin.access' is the gatekeeper permission.
-        if (auth()->check() && ! auth()->user()->hasPermission('admin.access')) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->middleware(function ($request, $next) {
+            if (! auth()->user()->hasPermission('manage_ranks')) {
+                abort(403);
+            }
+            return $next($request);
+        });
     }
 
     /**

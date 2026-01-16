@@ -40,7 +40,7 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user() ? [
-                    ...$request->user()->loadMissing('rank')->toArray(), // includes appended rank_data
+                    ...$request->user()->loadMissing('rank.permissions')->toArray(), // includes appended rank_data and permissions
                     'permissions' => function () use ($request) {
                         return $request->user()->rank ? $request->user()->rank->permissions->pluck('slug') : [];
                     },

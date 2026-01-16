@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,16 +13,37 @@ const props = defineProps<{
 
 const emit = defineEmits(['close', 'kick', 'mute', 'ban']);
 
+const page = usePage();
+const myPermissions = computed(() => (page.props.auth.user as any)?.permissions || []);
+
+const availableActions = computed(() => {
+    const actions = [];
+    if (myPermissions.value.includes('mute_temp') || myPermissions.value.includes('mute_perm')) actions.push('mute');
+    if (myPermissions.value.includes('kick_user')) actions.push('kick');
+    if (myPermissions.value.includes('ban_room_access')) actions.push('ban');
+    return actions;
+});
+
 const action = ref<'kick' | 'mute' | 'ban'>('mute');
+
+// Reset action if current one becomes unavailable
+watch(availableActions, (newActions) => {
+    if (newActions.length > 0 && !newActions.includes(action.value)) {
+        action.value = newActions[0] as any;
+    }
+}, { immediate: true });
+
 const duration = ref<number | ''>(10); // Minutes
 const reason = ref('');
 
 const isPermanent = ref(false);
 
+const canDoPermMute = computed(() => myPermissions.value.includes('mute_perm'));
+
 const submit = () => {
     emit(action.value, {
         userId: props.user.id,
-        minutes: isPermanent.value ? null : duration.value,
+        minutes: (isPermanent.value && canDoPermMute.value) ? null : duration.value,
         reason: reason.value,
         roomId: props.roomId
     });
@@ -35,7 +57,7 @@ const submit = () => {
             
             <div class="flex gap-2 mb-4">
                 <button 
-                    v-for="a in ['mute', 'kick', 'ban']" 
+                    v-for="a in availableActions" 
                     :key="a"
                     @click="action = a as any"
                     class="flex-1 py-1 rounded capitalize transition-colors"

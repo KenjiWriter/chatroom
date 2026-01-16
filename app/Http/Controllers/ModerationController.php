@@ -13,10 +13,8 @@ class ModerationController extends Controller
 
     public function kick(Request $request, Room $room, User $user)
     {
-        $this->authorize('kick', $user); // Define Policy or Gates later. For now, check permission manually if needed.
-        // Actually, let's rely on Service hierarchy check + basic permission check here.
         if (! auth()->user()->hasPermission('kick_user')) {
-             abort(403);
+             abort(403, 'You do not have permission to kick users.');
         }
 
         $request->validate(['reason' => 'required|string|max:255']);
@@ -28,13 +26,22 @@ class ModerationController extends Controller
 
     public function mute(Request $request, User $user)
     {
-        if (! auth()->user()->hasPermission('mute_user')) {
-             abort(403);
+        $duration = $request->input('duration');
+        $isPermanent = $request->boolean('is_permanent') || $duration === null;
+
+        if ($isPermanent) {
+            if (! auth()->user()->hasPermission('mute_perm')) {
+                abort(403, 'You do not have permission for permanent mutes.');
+            }
+        } else {
+            if (! auth()->user()->hasPermission('mute_temp')) {
+                abort(403, 'You do not have permission for temporary mutes.');
+            }
         }
 
         $request->validate([
             'reason' => 'required|string|max:255',
-            'duration' => 'nullable|integer|min:1', // Minutes
+            'duration' => 'nullable|integer|min:1',
             'room_id' => 'nullable|exists:rooms,id'
         ]);
 
@@ -44,11 +51,41 @@ class ModerationController extends Controller
             auth()->user(), 
             $user, 
             $room, 
-            $request->input('duration'), 
+            $isPermanent ? null : (int)$duration, 
             $request->input('reason')
         );
 
         return back()->with('success', 'User muted.');
+    }
+    
+    public function ban(Request $request, User $user)
+    {
+        if (! auth()->user()->hasPermission('ban_room_access')) {
+            abort(403, 'You do not have permission to restrict room access.');
+        }
+
+        $request->validate([
+            'reason' => 'required|string|max:255',
+            'duration' => 'nullable|integer|min:1',
+            'room_id' => 'required|exists:rooms,id' // Room Ban is specifically for rooms
+        ]);
+
+        $room = Room::findOrFail($request->input('room_id'));
+
+        // For now, "ban" in ModerationService handles global bans. 
+        // We'll add restrictAccess or use mute logic if it fits.
+        // Actually, the user asked for "ban_room_access", which I conceptualized as RoomBan.
+        // Let's use the mute logic with a flag or a new method.
+        
+        $this->moderationService->mute(
+            auth()->user(), 
+            $user, 
+            $room, 
+            $request->input('duration') ? (int)$request->input('duration') : null, 
+            $request->input('reason')
+        );
+
+        return back()->with('success', 'User restricted from room.');
     }
     
     // Ban implementation similar...

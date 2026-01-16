@@ -10,15 +10,41 @@ import { route } from 'ziggy-js';
 import { toast } from 'vue-sonner';
 import { usePage, router } from '@inertiajs/vue3';
 import { resolveAsset } from '@/lib/utils';
+import ModerationModal from './ModerationModal.vue';
 
 const props = defineProps<{
     userId: number;
     name: string;
+    roomId?: number;
 }>();
 
 const open = ref(false);
 const loading = ref(false);
 const userData = ref<any>(null);
+const isModModalOpen = ref(false);
+
+const page = usePage();
+const myPermissions = computed(() => (page.props.auth.user as any)?.permissions || []);
+
+const canModerate = computed(() => {
+    const modPerms = ['kick_user', 'mute_temp', 'mute_perm', 'ban_room_access'];
+    return myPermissions.value.some((p: string) => modPerms.includes(p));
+});
+
+const handleModeration = async (type: string, data: any) => {
+    try {
+        const url = type === 'kick' 
+            ? route('admin.kick', { room: data.roomId, user: data.userId })
+            : route('admin.mute', { user: data.userId });
+            
+        await axios.post(url, data);
+        toast.success(`User ${type}ed successfully.`);
+        isModModalOpen.value = false;
+        // Optionally reload or broadcast
+    } catch (e: any) {
+        toast.error(e.response?.data?.message || `Failed to ${type} user.`);
+    }
+};
 
 const fetchUserData = async () => {
     if (userData.value || loading.value) return;
@@ -151,11 +177,19 @@ const bannerStyle = computed(() => {
                                 <Check class="w-4 h-4" /> Accept
                             </Button>
                              
-                            <Button v-else-if="userData.friendship_status === 'accepted'"
+                             <Button v-else-if="userData.friendship_status === 'accepted'"
                                 size="sm" variant="ghost" class="h-8 gap-1"
                                 @click="router.post(route('conversations.store'), { user_id: userData.id })"
                             >
                                 <MessageSquare class="w-4 h-4" /> Message
+                            </Button>
+
+                            <!-- Moderation Actions -->
+                            <Button v-if="canModerate && !userData.is_self"
+                                size="sm" variant="outline" class="h-8 gap-1 text-destructive hover:text-destructive"
+                                @click="isModModalOpen = true"
+                            >
+                                <Ban class="w-4 h-4" /> Actions
                             </Button>
                          </div>
                     </div>
@@ -211,4 +245,15 @@ const bannerStyle = computed(() => {
             </div>
         </HoverCardContent>
     </HoverCard>
+
+    <ModerationModal 
+        v-if="userData"
+        :is-open="isModModalOpen" 
+        :user="userData"
+        :room-id="roomId"
+        @close="isModModalOpen = false"
+        @kick="(d) => handleModeration('kick', d)"
+        @mute="(d) => handleModeration('mute', d)"
+        @ban="(d) => handleModeration('ban', d)"
+    />
 </template>

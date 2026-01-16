@@ -24,9 +24,12 @@ class RankPermissionSeeder extends Seeder
         $permissions = [
             ['name' => 'Can Chat', 'slug' => 'chat.write'],
             ['name' => 'View Chat', 'slug' => 'chat.read'],
-            ['name' => 'Kick Users', 'slug' => 'user.kick'],
-            ['name' => 'Ban Users', 'slug' => 'user.ban'],
-            ['name' => 'Mute Users', 'slug' => 'user.mute'],
+            ['name' => 'Kick Users', 'slug' => 'kick_user'],
+            ['name' => 'Mute Temporarily', 'slug' => 'mute_temp'],
+            ['name' => 'Mute Permanently', 'slug' => 'mute_perm'],
+            ['name' => 'Restrict Room Access', 'slug' => 'ban_room_access'],
+            ['name' => 'Manage Rooms', 'slug' => 'manage_rooms'],
+            ['name' => 'Manage Ranks', 'slug' => 'manage_ranks'],
             ['name' => 'Bypass Level Lock', 'slug' => 'bypass.level_lock'],
         ];
 

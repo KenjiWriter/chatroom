@@ -23,6 +23,11 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
             \App\Http\Middleware\CheckIpBan::class,
         ]);
+
+        $middleware->alias([
+            'room.access' => \App\Http\Middleware\RoomAccessMiddleware::class,
+            'room.ban' => \App\Http\Middleware\CheckRoomBan::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

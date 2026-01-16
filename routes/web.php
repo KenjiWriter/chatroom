@@ -12,8 +12,8 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/chat', [\App\Http\Controllers\RoomController::class, 'index'])->name('chat.index');
-    Route::get('/chat/{room:slug}', [\App\Http\Controllers\RoomController::class, 'show'])->name('chat.room');
-    Route::post('/chat/{room:slug}/message', [\App\Http\Controllers\RoomController::class, 'storeMessage'])->name('chat.message');
+    Route::get('/chat/{room:slug}', [\App\Http\Controllers\RoomController::class, 'show'])->name('chat.room')->middleware(['room.access']);
+    Route::post('/chat/{room:slug}/message', [\App\Http\Controllers\RoomController::class, 'storeMessage'])->name('chat.message')->middleware(['room.ban']);
     
     // Moderation
     Route::post('/admin/kick/{room}/{user}', [\App\Http\Controllers\ModerationController::class, 'kick'])->name('admin.kick');
@@ -36,7 +36,9 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified']], function () {
+    Route::get('/settings', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('admin.settings');
     Route::resource('ranks', \App\Http\Controllers\Admin\RankController::class);
+    Route::resource('rooms', \App\Http\Controllers\Admin\RoomController::class);
 });
 
 require __DIR__.'/settings.php';

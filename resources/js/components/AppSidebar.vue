@@ -39,10 +39,10 @@ const mainNavItems = computed<NavItem[]>(() => {
     ];
 
     const perms = (user.value as any)?.permissions || [];
-    if (perms.includes('admin.access')) {
+    if (perms.includes('manage_rooms') || perms.includes('manage_ranks')) {
         items.push({
-            title: 'Admin Panel',
-            href: route('ranks.index'),
+            title: 'Management',
+            href: route('admin.settings'),
             icon: Shield,
         });
     }

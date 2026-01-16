@@ -122,13 +122,6 @@ class ModerationService
     protected function createSystemMessage(Room $room, string $content): void
     {
         $message = $room->messages()->create([
-            'user_id' => 1, // System user or separate mechanism? Migration constrained user_id. 
-                            // Let's assume ID 1 is system/admin or nullable? 
-                            // Migration said `foreignId('user_id')->constrained()`. 
-                            // We need a valid user ID. 
-                            // Solution: Use the Moderator's ID but flag as system message?
-                            // OR: Use a seed SYSTEM user.
-                            // Quick fix: User ID of the action performer (Moderator), but `is_system_message` = true handles display.
             'user_id' => auth()->id() ?? 1, 
             'content' => $content,
             'is_system_message' => true

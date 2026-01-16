@@ -36,13 +36,7 @@ class RoomController extends Controller
                 ]);
         }
 
-        if (! $room->checkAccess(auth()->user())) {
-             return redirect()->route('chat.index')
-                ->with('flash', [
-                    'message' => 'You do not have access to this room.',
-                    'type' => 'error'
-                ]);
-        }
+        // Access is now handled by room.access middleware
         
         // Log visit
         \App\Models\RoomVisit::updateOrCreate(
@@ -67,13 +61,7 @@ class RoomController extends Controller
 
     public function storeMessage(Request $request, Room $room, ChatService $chatService, \App\Services\ModerationService $moderationService)
     {
-        if (! $room->checkAccess(auth()->user())) {
-            abort(403, 'Unauthorized.');
-        }
-
-        if ($moderationService->isMuted(auth()->user(), $room)) {
-            return response()->json(['message' => 'You are muted.'], 403);
-        }
+        // Access and Mute checks are now handled by room.access and room.ban middleware
 
         $request->validate([
             'content' => ['required', 'string', 'max:2000'],
