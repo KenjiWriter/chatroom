@@ -51,17 +51,24 @@ onMounted(() => {
 
     // Listen for room-specific presence
     props.rooms.forEach(room => {
-        // @ts-ignore
-        window.Echo.join(`chat.room.presence.${room.id}`)
-            .here((users: any[]) => {
-                roomCounts.value[room.id] = users.length;
-            })
-            .joining(() => {
-                roomCounts.value[room.id] = (roomCounts.value[room.id] || 0) + 1;
-            })
-            .leaving(() => {
-                roomCounts.value[room.id] = Math.max(0, (roomCounts.value[room.id] || 1) - 1);
-            });
+        // Simple logic check: if user doesn't meet requirements, don't try to join
+        // This avoids 403 errors from Broadcast authorization
+        const hasLevel = !room.min_level || props.auth.user.level >= room.min_level;
+        const hasRank = !room.required_rank_id || (props.auth.user.rank_data?.priority >= room.required_rank?.priority);
+        
+        if (hasLevel && hasRank) {
+            // @ts-ignore
+            window.Echo.join(`chat.room.presence.${room.id}`)
+                .here((users: any[]) => {
+                    roomCounts.value[room.id] = users.length;
+                })
+                .joining(() => {
+                    roomCounts.value[room.id] = (roomCounts.value[room.id] || 0) + 1;
+                })
+                .leaving(() => {
+                    roomCounts.value[room.id] = Math.max(0, (roomCounts.value[room.id] || 1) - 1);
+                });
+        }
     });
 });
 
