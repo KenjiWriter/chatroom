@@ -25,6 +25,7 @@ Broadcast::channel('chat.room.presence.{id}', function (User $user, int $id) {
         return [
             'id' => $user->id,
             'name' => $user->name,
+            'avatar_url' => $user->avatar_url,
             'rank_data' => $user->rank_data, // Use accessor for frontend display
         ];
     }
