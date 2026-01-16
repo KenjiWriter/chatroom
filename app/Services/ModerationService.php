@@ -49,7 +49,7 @@ class ModerationService
         $this->createSystemMessage($room, "{$target->name} was kicked by {$moderator->name}. Reason: {$reason}");
     }
 
-    public function mute(User $moderator, User $target, ?Room $room, ?int $minutes, string $reason): void
+    public function mute(User $moderator, User $target, ?Room $room, ?int $minutes, ?string $reason): void
     {
         $this->ensureCanModerate($moderator, $target);
 

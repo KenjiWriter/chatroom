@@ -69,11 +69,12 @@ const updateRank = async (rankId: string) => {
 };
 
 const handleModeration = (type: string, data: any) => {
-    const url = type === 'kick' 
-        ? route('admin.kick', { room: data.roomId, user: data.userId })
-        : (type === 'ban' ? route('admin.ban', { user: data.userId }) 
-        : (type === 'unmute' ? route('admin.unmute', { user: data.userId }) 
-        : route('admin.mute', { user: data.userId })));
+    let url = '';
+    if (type === 'kick') url = route('admin.kick', { room: data.roomId, user: data.userId });
+    else if (type === 'ban') url = route('admin.ban', { user: data.userId });
+    else if (type === 'unmute') url = route('admin.unmute', { user: data.userId });
+    else if (type === 'unban') url = route('admin.unban', { user: data.userId });
+    else url = route('admin.mute', { user: data.userId });
         
     router.post(url, data, {
         onSuccess: () => {
