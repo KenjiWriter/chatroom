@@ -85,11 +85,15 @@ class ConversationController extends Controller
 
         $request->validate([
             'body' => 'required|string|max:2000',
+            'type' => 'nullable|string|in:text,gif',
+            'metadata' => 'nullable|array',
         ]);
 
         $message = $conversation->messages()->create([
             'sender_id' => auth()->id(),
             'body' => $request->body,
+            'type' => $request->input('type', 'text'),
+            'metadata' => $request->input('metadata'),
         ]);
 
         $conversation->update(['last_message_at' => now()]);

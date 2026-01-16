@@ -76,12 +76,16 @@ class RoomController extends Controller
         }
 
         $request->validate([
-            'content' => ['required', 'string', 'max:1000'],
+            'content' => ['required', 'string', 'max:2000'],
+            'type' => ['nullable', 'string', 'in:text,gif'],
+            'metadata' => ['nullable', 'array'],
         ]);
 
         $message = $room->messages()->create([
             'user_id' => auth()->id(),
             'content' => $request->input('content'),
+            'type' => $request->input('type', 'text'),
+            'metadata' => $request->input('metadata'),
         ]);
 
         // Award XP

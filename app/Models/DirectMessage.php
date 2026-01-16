@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class DirectMessage extends Model
 {
-    protected $fillable = ['conversation_id', 'sender_id', 'body', 'read_at'];
+    protected $fillable = ['conversation_id', 'sender_id', 'body', 'type', 'metadata', 'read_at'];
 
     protected $casts = [
         'read_at' => 'datetime',
+        'metadata' => 'array',
     ];
 
     public function conversation(): \Illuminate\Database\Eloquent\Relations\BelongsTo
