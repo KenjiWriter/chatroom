@@ -149,8 +149,9 @@ const displayBanner = computed(() => {
                              <div 
                                 class="relative h-32 md:h-48 w-full rounded-xl bg-muted overflow-hidden group border border-input"
                                 :style="{ 
-                                    backgroundImage: displayBanner ? `url('${displayBanner}')` : undefined,
+                                    backgroundImage: displayBanner ? `url(${displayBanner})` : undefined,
                                     background: !displayBanner ? `linear-gradient(to right, ${user.rank_data?.color_name || '#666'}, #1a1a1a)` : undefined,
+                                    backgroundColor: '#333',
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
                                     backgroundRepeat: 'no-repeat'
