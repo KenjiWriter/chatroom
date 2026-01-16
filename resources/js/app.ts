@@ -9,6 +9,7 @@ import { initializeTheme } from './composables/useAppearance';
 
 import { route, ZiggyVue } from 'ziggy-js';
 import i18n from './plugins/i18n';
+import { resolveAsset } from './lib/utils';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 
@@ -38,12 +39,15 @@ createInertiaApp({
         // @ts-ignore
         window.Ziggy = ziggyConfig;
 
-        createApp({ render: () => h(App, props) })
+        const app = createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue, ziggyConfig)
             .mixin({ methods: { route } })
-            .use(i18n as any)
-            .mount(el);
+            .use(i18n as any);
+
+        app.config.globalProperties.$resolveAsset = resolveAsset;
+
+        app.mount(el);
     },
     progress: {
         color: '#4B5563',

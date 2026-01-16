@@ -3,6 +3,7 @@ import { computed } from 'vue';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useInitials } from '@/composables/useInitials';
+import { resolveAsset } from '@/lib/utils';
 import type { User } from '@/types';
 
 interface Props {
@@ -16,15 +17,15 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { getInitials } = useInitials();
 
-// Compute whether we should show the avatar image
-const showAvatar = computed(
-    () => props.user.avatar && props.user.avatar !== '',
-);
+const avatarUrl = computed(() => {
+    // If user has avatar_url, we resolve it. If not, resolveAsset returns ui-avatars URL if we pass name.
+    return resolveAsset(props.user.avatar_url as string, 'avatar', props.user.name);
+});
 </script>
 
 <template>
     <Avatar class="h-8 w-8 overflow-hidden rounded-lg">
-        <AvatarImage v-if="showAvatar" :src="user.avatar!" :alt="user.name" />
+        <AvatarImage v-if="avatarUrl" :src="avatarUrl" :alt="user.name" />
         <AvatarFallback class="rounded-lg text-black dark:text-white">
             {{ getInitials(user.name) }}
         </AvatarFallback>
