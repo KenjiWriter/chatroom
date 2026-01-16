@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, Link } from '@inertiajs/vue3';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
@@ -19,6 +19,7 @@ const props = defineProps<{
     friends: any[];
     pendingRequests: any[];
     roomHistory: any[];
+    auth: any;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -85,30 +86,67 @@ const declineRequest = async (id: number) => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-6 p-4">
-            <!-- Rank & XP Card -->
-            <Card>
-                 <CardHeader>
-                    <CardTitle>Welcome Back!</CardTitle>
-                    <CardDescription>Level {{ progress.next_level_xp ? 'Progress' : 'Maxed' }}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div class="flex items-center gap-4 mb-2">
-                        <div class="font-bold text-2xl">{{ progress.current_xp }} XP</div>
-                         <div class="text-sm text-gray-500"> Level {{ Math.floor(progress.current_xp / 100) }} (Approximation) </div>
+            <!-- Profile Header -->
+            <!-- Profile Header -->
+            <div class="relative w-full rounded-xl bg-card text-card-foreground shadow-sm border border-border mb-12">
+                <!-- Banner -->
+                <div 
+                    class="h-[250px] w-full rounded-t-xl bg-cover bg-center overflow-hidden" 
+                    :style="{ 
+                        backgroundImage: props.auth.user.banner_url ? `url(${props.auth.user.banner_url})` : undefined,
+                        background: !props.auth.user.banner_url ? `linear-gradient(135deg, ${props.auth.user.rank_data.color_name || '#666'}, #1a1a1a)` : undefined 
+                    }"
+                ></div>
+                
+                <!-- Avatar (Absolute Overlap) -->
+                <div class="absolute -bottom-12 left-10 p-1 bg-card rounded-full shadow-lg">
+                     <Avatar class="w-32 h-32 md:w-40 md:h-40 border-4 border-background">
+                        <AvatarImage :src="props.auth.user.avatar_url" class="object-cover" />
+                        <AvatarFallback class="text-3xl font-bold">{{ props.auth.user.name.substring(0,2).toUpperCase() }}</AvatarFallback>
+                     </Avatar>
+                </div>
+                
+                <!-- Info Section -->
+                <div class="pt-4 pb-6 px-6 pl-4 md:pl-[14rem]">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                         <!-- User Details -->
+                         <div class="flex-1">
+                             <h2 class="text-3xl font-bold flex items-center gap-3">
+                                <RankedUserLabel :name="props.auth.user.name" :rank="props.auth.user.rank_data" :user-id="props.auth.user.id" />
+                             </h2>
+                             <div class="text-muted-foreground font-medium mt-1 flex items-center gap-3 text-lg">
+                                <span :style="{ color: props.auth.user.rank_data.color_name }">{{ props.auth.user.rank_data.name }}</span>
+                                <span class="text-border">•</span>
+                                <span>Level {{ props.auth.user.level }}</span>
+                             </div>
+
+                             <!-- XP Bar -->
+                             <div class="mt-4 max-w-xl">
+                                <div class="flex justify-between text-xs text-muted-foreground mb-1 uppercase tracking-wider font-semibold">
+                                    <span>XP Progress</span>
+                                    <span>{{ progress.needed_for_next }} XP to Lvl {{ Math.floor(progress.current_xp / 100) + 1 }}</span>
+                                </div>
+                                <div class="h-2.5 w-full bg-secondary/50 rounded-full overflow-hidden border border-border/50">
+                                    <div 
+                                        class="h-full bg-primary transition-all duration-1000"
+                                        :style="{ width: progress.percent + '%' }"
+                                    ></div>
+                                </div>
+                             </div>
+                         </div>
+                         
+                         <!-- Edit Action -->
+                         <div class="flex items-start">
+                             <Button as-child variant="outline" class="gap-2">
+                                <Link :href="route('profile.edit')">
+                                    <UserIcon class="w-4 h-4" />
+                                    Edit Profile
+                                </Link>
+                             </Button>
+                         </div>
                     </div>
-                    <div class="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div 
-                            class="h-full bg-indigo-500 transition-all duration-1000"
-                            :style="{ width: progress.percent + '%' }"
-                        ></div>
-                    </div>
-                     <div class="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>Lvl {{ Math.floor(progress.current_xp / 100) }}</span> 
-                        <!-- Simplification for display, real logic is in backend progress obj -->
-                        <span>{{ progress.needed_for_next }} XP to next level</span>
-                    </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
             <Tabs default-value="overview" class="w-full">
                 <TabsList class="grid w-full grid-cols-2 lg:w-[400px]">
