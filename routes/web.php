@@ -14,4 +14,8 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified']], function () {
+    Route::resource('ranks', \App\Http\Controllers\Admin\RankController::class);
+});
+
 require __DIR__.'/settings.php';
