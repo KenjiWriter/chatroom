@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, usePage, router } from '@inertiajs/vue3';
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import RankedUserLabel from '@/components/RankedUserLabel.vue';
+import UserPopOver from '@/components/UserPopOver.vue';
 import ModerationModal from '@/components/ModerationModal.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -234,116 +235,187 @@ onUnmounted(() => {
 
     <AppLayout :title="room.name">
         <template #header>
-            <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    {{ room.name }}
-                </h2>
-                <div class="text-sm text-gray-500">
-                    <span class="mr-2">{{ onlineUsers.length }} Online</span>
-                    <span v-if="isMuted" class="text-red-500 font-bold">MUTED {{ muteTimeRemaining }}</span>
+            <div class="flex justify-between items-center h-16 px-4 border-b bg-card">
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-3">
+                        <h2 class="font-bold text-xl tracking-tight text-foreground">
+                            {{ room.name }}
+                        </h2>
+                        <span v-if="room.required_rank" 
+                              class="text-xs font-bold px-2 py-0.5 rounded-full bg-secondary"
+                              :style="{ color: room.required_rank.color_name }"
+                        >
+                            {{ room.required_rank.name }}+
+                        </span>
+                    </div>
+                    <p class="text-xs text-muted-foreground">{{ room.description }}</p>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                        </span>
+                        <span class="font-medium">{{ onlineUsers.length }} Online</span>
+                    </div>
+                    <span v-if="isMuted" class="text-xs font-bold text-red-500 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                        MUTED: {{ muteTimeRemaining }}
+                    </span>
                 </div>
             </div>
         </template>
 
-        <div class="flex h-[calc(100vh-10rem)] max-w-7xl mx-auto sm:px-6 lg:px-8 py-6 gap-6">
+        <!-- Main Chat Container -->
+        <div class="flex h-[calc(100vh-8.5rem)] overflow-hidden bg-background">
+            
             <!-- Chat Area -->
-            <div class="flex flex-col flex-1 bg-white dark:bg-gray-800 shadow-xl sm:rounded-lg overflow-hidden">
-                <!-- Messages -->
+            <div class="flex-1 flex flex-col min-w-0 bg-background relative">
+                
+                <!-- Messages List -->
                 <div 
                     ref="messagesContainer" 
-                    class="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
+                    class="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth pb-4"
                 >
-                    <div 
-                        v-for="msg in messages" 
-                        :key="msg.id" 
-                    >
+                    <div v-for="msg in messages" :key="msg.id" class="w-full">
+                        
                         <!-- System Message -->
-                        <div v-if="msg.is_system_message" class="flex justify-center my-2">
-                             <div class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-xs text-gray-500 rounded-full">
-                                 {{ msg.content }}
-                             </div>
+                        <div v-if="msg.is_system_message" class="flex justify-center my-4">
+                            <span class="px-4 py-1.5 bg-muted/50 text-xs font-medium text-muted-foreground rounded-full border border-border/50 shadow-sm">
+                                {{ msg.content }}
+                            </span>
                         </div>
 
                         <!-- User Message -->
-                        <div 
-                            v-else
-                            class="flex flex-col"
-                            :class="msg.user_id === currentUser.id ? 'items-end' : 'items-start'"
+                        <div v-else 
+                             class="flex gap-4 max-w-4xl"
+                             :class="msg.user_id === currentUser.id ? 'ml-auto flex-row-reverse' : ''"
                         >
-                            <RankedUserLabel 
-                                :rank="msg.user.rank_data" 
-                                :name="msg.user.name"
-                                :user-id="msg.user_id"
-                                :show-moderation-tools="canModerate && msg.user_id !== currentUser.id"
-                                @moderate="openModModal(msg.user)"
-                                class="mb-1"
-                            />
-                            <!-- Content Bubble (Only visual backup, text is in Label now mostly? 
-                                 Wait, RankedUserLabel displays message? Yes. 
-                                 But normally bubble style is separate.
-                                 If RankedUserLabel handles message, we duplicate?
-                                 Check implementation of RankedUserLabel.
-                                 It has 'message' prop which renders text.
-                                 If we use that, we lose the bubble styling unless we style the label?
-                                 Let's keep the bubble for message body and NOT pass message to label here
-                                 OR rely on Label for full display?
-                                 Previous walkthrough used Label for name + bubble for text.
-                                 Let's revert to: Label for Name, Bubble for Text.
-                                 So don't pass :message to RankedUserLabel here.
-                            -->
-                            <div 
-                                class="px-4 py-2 rounded-lg max-w-[80%] break-words shadow-sm mt-1"
-                                :class="[
-                                    msg.user_id === currentUser.id 
-                                        ? 'bg-indigo-600 text-white rounded-br-none' 
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-none',
-                                    msg.is_sending ? 'opacity-70' : ''
-                                ]"
-                            >
-                               {{ msg.content }}
+                            <!-- Avatar -->
+                            <div class="flex-shrink-0">
+                                <UserPopOver 
+                                    v-if="msg.user_id !== currentUser.id" 
+                                    :user-id="msg.user_id"
+                                    :name="msg.user.name"
+                                >
+                                    <Avatar class="h-10 w-10 border border-border cursor-pointer hover:ring-2 hover:ring-ring transition-all">
+                                        <AvatarImage :src="msg.user.avatar_url" />
+                                        <AvatarFallback>{{ msg.user.name.substring(0,2).toUpperCase() }}</AvatarFallback>
+                                    </Avatar>
+                                </UserPopOver>
+                                <Avatar v-else class="h-10 w-10 border border-border">
+                                    <AvatarImage :src="msg.user.avatar_url" />
+                                    <AvatarFallback>{{ msg.user.name.substring(0,2).toUpperCase() }}</AvatarFallback>
+                                </Avatar>
                             </div>
-                            <span v-if="msg.is_sending" class="text-xs text-gray-400 mt-1">Sending...</span>
+
+                            <!-- Message Content -->
+                            <div class="flex flex-col min-w-0 max-w-[85%] sm:max-w-[75%]"
+                                 :class="msg.user_id === currentUser.id ? 'items-end' : 'items-start'"
+                            >
+                                <div class="flex items-center gap-2 mb-1">
+                                    <RankedUserLabel 
+                                        :rank="msg.user.rank_data" 
+                                        :name="msg.user.name"
+                                        :user-id="msg.user_id"
+                                        :show-moderation-tools="canModerate && msg.user_id !== currentUser.id"
+                                        @moderate="openModModal(msg.user)"
+                                        class="text-sm font-semibold"
+                                    />
+                                    <span class="text-[10px] text-muted-foreground opacity-70">
+                                        {{ new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+                                    </span>
+                                </div>
+
+                                <div 
+                                    class="relative px-5 py-3 text-sm shadow-sm leading-relaxed"
+                                    :class="[
+                                        msg.user_id === currentUser.id 
+                                            ? 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm' 
+                                            : 'bg-muted/80 text-foreground border border-border/50 rounded-2xl rounded-tl-sm',
+                                        msg.is_sending ? 'opacity-70' : ''
+                                    ]"
+                                >
+                                    {{ msg.content }}
+                                </div>
+                                <span v-if="msg.is_sending" class="text-[10px] text-muted-foreground mt-1">Sending...</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Typing & Input -->
-                <div v-if="typingUsers.length > 0" class="px-4 py-2 text-xs text-gray-500 italic">
-                    {{ typingUsers.map(u => u.name).join(', ') }} is typing...
-                </div>
 
-                <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                    <form @submit.prevent="sendMessage" class="flex gap-2">
+                <!-- Typing Indicator & Input Area -->
+                 <div class="p-4 bg-background border-t border-border z-10 w-full max-w-5xl mx-auto">
+                    <!-- Typing Indicator -->
+                    <div class="h-6 mb-2 flex items-center">
+                        <div v-if="typingUsers.length > 0" class="flex items-center gap-2 text-xs text-muted-foreground animate-pulse">
+                            <span class="flex gap-0.5">
+                                <span class="h-1 w-1 bg-current rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                                <span class="h-1 w-1 bg-current rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                                <span class="h-1 w-1 bg-current rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+                            </span>
+                            {{ typingUsers.map(u => u.name).join(', ') }} is typing...
+                        </div>
+                    </div>
+
+                    <form @submit.prevent="sendMessage" class="relative flex items-center gap-2">
                         <Input 
                             v-model="newMessage" 
                             type="text" 
-                            :placeholder="isMuted ? 'You are muted.' : 'Type your message...'"
-                            class="flex-1"
+                            :placeholder="isMuted ? 'You are temporarily muted.' : 'Type a message...'"
+                            class="flex-1 py-6 pl-5 pr-12 rounded-full border-muted-foreground/20 bg-muted/30 focus-visible:ring-offset-2 focus-visible:ring-primary/20 shadow-sm"
                             @input="handleTyping"
                             :disabled="sending || isMuted"
                         />
-                        <Button type="submit" :disabled="sending || !newMessage.trim() || isMuted">
-                            Send
+                        <Button 
+                            type="submit" 
+                            size="icon"
+                            class="absolute right-2 h-10 w-10 rounded-full shadow-md transition-all hover:scale-105 active:scale-95"
+                            :disabled="sending || !newMessage.trim() || isMuted"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-0.5"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                            <span class="sr-only">Send</span>
                         </Button>
                     </form>
                 </div>
             </div>
 
-            <!-- Online Users -->
-            <div class="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 shadow-xl sm:rounded-lg overflow-hidden">
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-700 dark:text-gray-200">
-                    Online Users
+            <!-- Right Sidebar: Online Users -->
+            <div class="hidden lg:flex w-80 border-l border-border bg-card/50 flex-col">
+                <div class="p-4 border-b border-border bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                    <h3 class="font-semibold text-sm tracking-wide text-foreground uppercase opacity-80">
+                        Online Users
+                    </h3>
                 </div>
-                <div class="flex-1 overflow-y-auto p-4 space-y-3">
-                    <div v-for="user in onlineUsers" :key="user.id" class="flex items-center">
-                        <RankedUserLabel 
-                            :rank="user.rank_data" 
-                            :name="user.name"
-                            :user-id="user.id"
-                            :show-message="false"
-                            :show-moderation-tools="canModerate && user.id !== currentUser.id"
-                            @moderate="openModModal(user)"
-                        />
+                <div class="flex-1 overflow-y-auto p-2 space-y-1">
+                    <div v-for="user in onlineUsers" 
+                         :key="user.id" 
+                         class="group flex items-center p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                         <div class="relative mr-3">
+                             <UserPopOver :user-id="user.id" :name="user.name">
+                                 <Avatar class="h-9 w-9 border border-border cursor-pointer">
+                                     <AvatarImage :src="user.avatar_url" />
+                                     <AvatarFallback>{{ user.name.substring(0,2).toUpperCase() }}</AvatarFallback>
+                                 </Avatar>
+                             </UserPopOver>
+                             <span class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-background"></span>
+                         </div>
+                         <div class="flex-1 min-w-0">
+                             <RankedUserLabel 
+                                 :rank="user.rank_data" 
+                                 :name="user.name"
+                                 :user-id="user.id"
+                                 :show-message="false"
+                                 :show-moderation-tools="canModerate && user.id !== currentUser.id"
+                                 @moderate="openModModal(user)"
+                                 class="text-sm font-medium truncate"
+                             />
+                             <!-- Optional status text -->
+                             <p class="text-[10px] text-muted-foreground truncate">
+                                 {{ user.bio || 'Online' }}
+                             </p>
+                         </div>
                     </div>
                 </div>
             </div>

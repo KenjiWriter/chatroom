@@ -30,6 +30,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const onlineFriendIds = ref<number[]>([]);
+const roomCounts = ref<Record<number, number>>({});
 
 onMounted(() => {
     // Listen for global online status
@@ -46,11 +47,31 @@ onMounted(() => {
         .leaving((user: any) => {
             onlineFriendIds.value = onlineFriendIds.value.filter(id => id !== user.id);
         });
+
+    // Listen for room-specific presence
+    props.rooms.forEach(room => {
+        // @ts-ignore
+        window.Echo.join(`chat.room.presence.${room.id}`)
+            .here((users: any[]) => {
+                roomCounts.value[room.id] = users.length;
+            })
+            .joining(() => {
+                roomCounts.value[room.id] = (roomCounts.value[room.id] || 0) + 1;
+            })
+            .leaving(() => {
+                roomCounts.value[room.id] = Math.max(0, (roomCounts.value[room.id] || 1) - 1);
+            });
+    });
 });
 
 onUnmounted(() => {
     // @ts-ignore
     window.Echo.leave('online');
+    
+    props.rooms.forEach(room => {
+        // @ts-ignore
+        window.Echo.leave(`chat.room.presence.${room.id}`);
+    });
 });
 
 const friendsWithStatus = computed(() => {
@@ -179,22 +200,31 @@ console.log('Dashboard Banner URL:', bannerSrc.value);
                 <TabsContent value="overview" class="space-y-4">
                      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                          <!-- Rooms -->
-                         <Card v-for="room in rooms" :key="room.id" class="hover:bg-accent/50 transition cursor-pointer" @click="router.visit(route('chat.room', room.slug))">
+                         <Card v-for="room in rooms" :key="room.id" class="group hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer overflow-hidden relative" @click="router.visit(route('chat.room', room.slug))">
                             <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle class="text-sm font-medium">
+                                <CardTitle class="text-sm font-bold tracking-tight">
                                     {{ room.name }}
                                 </CardTitle>
-                                <MessageSquare class="h-4 w-4 text-muted-foreground" />
+                                <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary animate-in fade-in zoom-in duration-300">
+                                    <span class="relative flex h-2 w-2">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                    </span>
+                                    <span class="text-[10px] font-bold">{{ roomCounts[room.id] || 0 }}</span>
+                                </div>
                             </CardHeader>
                             <CardContent>
-                                <div class="text-xs text-muted-foreground">
-                                    {{ room.description || 'Join the conversation.' }}
+                                <div class="text-xs text-muted-foreground line-clamp-2 min-h-[2rem]">
+                                    {{ room.description || 'Join the conversation and connect with others.' }}
                                 </div>
-                                <div v-if="room.required_rank" class="mt-2 text-xs font-bold" :style="{ color: room.required_rank.color_name }">
-                                    Requires {{ room.required_rank.name }}
-                                </div>
-                                <div v-else class="mt-2 text-xs text-green-600">
-                                    Open to all
+                                <div class="mt-4 flex items-center justify-between">
+                                    <div v-if="room.required_rank" class="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted border border-border" :style="{ color: room.required_rank.color_name }">
+                                        {{ room.required_rank.name }}
+                                    </div>
+                                    <div v-else class="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 border border-green-500/20">
+                                        Public
+                                    </div>
+                                    <MessageSquare class="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                                 </div>
                             </CardContent>
                          </Card>
