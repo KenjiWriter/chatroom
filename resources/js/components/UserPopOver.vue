@@ -153,6 +153,7 @@ const bannerStyle = computed(() => {
                              
                             <Button v-else-if="userData.friendship_status === 'accepted'"
                                 size="sm" variant="ghost" class="h-8 gap-1"
+                                @click="router.post(route('conversations.store'), { user_id: userData.id })"
                             >
                                 <MessageSquare class="w-4 h-4" /> Message
                             </Button>
