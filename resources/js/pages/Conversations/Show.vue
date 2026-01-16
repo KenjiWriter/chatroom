@@ -86,11 +86,7 @@ onMounted(() => {
                 scrollToBottom();
                 
                 // Mark as read immediately if viewing
-                axios.post(route('conversations.messages.store', props.conversation.id), { 
-                    // This is handled by 'show' route, but for real-time we might need an explicit mark-as-read?
-                    // Actually, the show controller marks them, but we need to mark new ones too.
-                    // Let's add a separate mark-as-read route or handle it silently.
-                });
+                axios.post(route('conversations.read', props.conversation.id));
             }
         });
 });

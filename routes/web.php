@@ -31,6 +31,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', [ConversationController::class, 'store'])->name('conversations.store');
         Route::get('/{conversation}', [ConversationController::class, 'show'])->name('conversations.show');
         Route::post('/{conversation}/messages', [ConversationController::class, 'sendMessage'])->name('conversations.messages.store');
+        Route::post('/{conversation}/read', [ConversationController::class, 'markAsRead'])->name('conversations.read');
     });
 });
 

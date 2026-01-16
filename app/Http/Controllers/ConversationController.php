@@ -101,6 +101,18 @@ class ConversationController extends Controller
         ]);
     }
 
+    public function markAsRead(Conversation $conversation)
+    {
+        $this->authorizeAccess($conversation);
+
+        $conversation->messages()
+            ->where('sender_id', '!=', auth()->id())
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
+        return response()->json(['success' => true]);
+    }
+
     protected function authorizeAccess(Conversation $conversation)
     {
         if (!$conversation->users()->where('users.id', auth()->id())->exists()) {
