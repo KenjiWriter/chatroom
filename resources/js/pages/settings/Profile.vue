@@ -151,6 +151,7 @@ const displayBanner = computed(() => {
                                     v-if="displayBanner"
                                     :src="displayBanner"
                                     class="w-full h-full object-cover"
+                                    @error="bannerPreview = null"
                                 />
                                 <div 
                                     v-else

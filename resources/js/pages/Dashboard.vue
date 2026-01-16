@@ -79,6 +79,14 @@ const declineRequest = async (id: number) => {
         toast.error("Failed to decline.");
     }
 };
+const getBannerUrl = (url: string | null) => {
+    if (!url) return null;
+    if (url.startsWith('http') || url.startsWith('/storage')) return url;
+    return `/storage/${url}`;
+};
+
+const bannerUrl = computed(() => getBannerUrl(props.auth.user.banner_url));
+console.log('Dashboard Banner URL:', bannerUrl.value);
 </script>
 
 <template>
@@ -87,16 +95,21 @@ const declineRequest = async (id: number) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-6 p-4">
             <!-- Profile Header -->
-            <!-- Profile Header -->
             <div class="relative w-full rounded-xl bg-card text-card-foreground shadow-sm border border-border mb-12">
                 <!-- Banner -->
-                <div 
-                    class="h-[250px] w-full rounded-t-xl bg-cover bg-center overflow-hidden" 
-                    :style="{ 
-                        backgroundImage: props.auth.user.banner_url ? `url(${props.auth.user.banner_url})` : undefined,
-                        background: !props.auth.user.banner_url ? `linear-gradient(135deg, ${props.auth.user.rank_data.color_name || '#666'}, #1a1a1a)` : undefined 
-                    }"
-                ></div>
+                <div class="h-[250px] w-full rounded-t-xl overflow-hidden relative bg-muted">
+                    <img 
+                        v-if="bannerUrl"
+                        :src="bannerUrl"
+                        alt="Profile Banner"
+                        class="w-full h-full object-cover"
+                    />
+                    <div 
+                        v-else
+                        class="w-full h-full"
+                        :style="{ background: `linear-gradient(135deg, ${props.auth.user.rank_data.color_name || '#666'}, #1a1a1a)` }"
+                    ></div>
+                </div>
                 
                 <!-- Avatar (Absolute Overlap) -->
                 <div class="absolute -bottom-12 left-10 p-1 bg-card rounded-full shadow-lg">
