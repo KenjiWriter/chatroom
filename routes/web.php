@@ -39,6 +39,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified']], functi
     Route::get('/settings', [\App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('admin.settings');
     Route::resource('ranks', \App\Http\Controllers\Admin\RankController::class);
     Route::resource('rooms', \App\Http\Controllers\Admin\RoomController::class);
+
+    // User Management
+    Route::post('/users/{user}/rank', [\App\Http\Controllers\Admin\UserManagementController::class, 'updateRank'])->name('admin.users.rank');
+    Route::get('/api/ranks/assignable', [\App\Http\Controllers\Admin\UserManagementController::class, 'assignableRanks'])->name('admin.ranks.assignable');
 });
 
 require __DIR__.'/settings.php';

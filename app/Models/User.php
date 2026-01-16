@@ -160,4 +160,36 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(Conversation::class)
             ->withTimestamps();
     }
+
+    /**
+     * Check if the user can manage the target user's rank.
+     */
+    public function canManage(User $targetUser): bool
+    {
+        if (!$this->hasPermission('manage_user_ranks')) {
+            return false;
+        }
+
+        // Higher priority can manage lower priority
+        $myPriority = $this->rank?->priority ?? 0;
+        $targetPriority = $targetUser->rank?->priority ?? 0;
+
+        return $myPriority > $targetPriority;
+    }
+
+    /**
+     * Check if the user can assign a specific rank.
+     */
+    public function canAssignRank(Rank $newRank): bool
+    {
+        if (!$this->hasPermission('manage_user_ranks')) {
+            return false;
+        }
+
+        // Higher priority can assign lower priority ranks
+        $myPriority = $this->rank?->priority ?? 0;
+        $newPriority = $newRank->priority;
+
+        return $myPriority > $newPriority;
+    }
 }

@@ -22,14 +22,50 @@ const open = ref(false);
 const loading = ref(false);
 const userData = ref<any>(null);
 const isModModalOpen = ref(false);
+const assignableRanks = ref<any[]>([]);
 
 const page = usePage();
-const myPermissions = computed(() => (page.props.auth.user as any)?.permissions || []);
+const authUser = computed(() => page.props.auth.user as any);
+const myPermissions = computed(() => authUser.value?.permissions || []);
 
 const canModerate = computed(() => {
     const modPerms = ['kick_user', 'mute_temp', 'mute_perm', 'ban_room_access'];
     return myPermissions.value.some((p: string) => modPerms.includes(p));
 });
+
+const canManageRanks = computed(() => {
+    if (!myPermissions.value.includes('manage_user_ranks')) return false;
+    if (userData.value?.is_self) return false;
+    
+    // Priority check
+    const myPriority = authUser.value?.rank?.priority || 0;
+    const targetPriority = userData.value?.rank_data?.priority || 0;
+    
+    return myPriority > targetPriority;
+});
+
+const fetchAssignableRanks = async () => {
+    if (assignableRanks.value.length > 0) return;
+    try {
+        const response = await axios.get(route('admin.ranks.assignable'));
+        assignableRanks.value = response.data;
+    } catch (e) {
+        console.error("Failed to fetch ranks", e);
+    }
+};
+
+const updateRank = async (rankId: string) => {
+    if (!rankId) return;
+    try {
+        await axios.post(route('admin.users.rank', props.userId), { rank_id: rankId });
+        toast.success("User rank updated.");
+        // Refresh local data
+        userData.value = null;
+        fetchUserData();
+    } catch (e: any) {
+        toast.error(e.response?.data?.message || "Failed to update rank.");
+    }
+};
 
 const handleModeration = async (type: string, data: any) => {
     try {
@@ -53,6 +89,9 @@ const fetchUserData = async () => {
     try {
         const response = await axios.get(route('users.hover-card', props.userId));
         userData.value = response.data;
+        if (canManageRanks.value) {
+            fetchAssignableRanks();
+        }
     } catch (e) {
         console.error("Failed to fetch user data", e);
     } finally {
@@ -236,6 +275,20 @@ const bannerStyle = computed(() => {
                             
                             <div class="text-xs text-gray-400 mt-3">
                                 Joined {{ userData.created_at }}
+                            </div>
+
+                            <!-- Rank Management -->
+                            <div v-if="canManageRanks" class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                <Label class="text-[10px] uppercase font-bold text-gray-400 mb-2 block">Set User Rank</Label>
+                                <select 
+                                    @change="(e) => updateRank((e.target as HTMLSelectElement).value)"
+                                    class="w-full h-8 rounded-md border border-input bg-background px-2 py-1 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="">Select rank...</option>
+                                    <option v-for="rank in assignableRanks" :key="rank.id" :value="rank.id" :selected="rank.id === userData.rank_id">
+                                        {{ rank.name }} (P:{{ rank.priority }})
+                                    </option>
+                                </select>
                             </div>
                         </div>
                     </div>

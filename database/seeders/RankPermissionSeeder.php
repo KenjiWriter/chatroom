@@ -30,6 +30,7 @@ class RankPermissionSeeder extends Seeder
             ['name' => 'Restrict Room Access', 'slug' => 'ban_room_access'],
             ['name' => 'Manage Rooms', 'slug' => 'manage_rooms'],
             ['name' => 'Manage Ranks', 'slug' => 'manage_ranks'],
+            ['name' => 'Manage User Ranks', 'slug' => 'manage_user_ranks'],
             ['name' => 'Bypass Level Lock', 'slug' => 'bypass.level_lock'],
         ];
 
